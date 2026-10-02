@@ -1,4 +1,5 @@
 # MMP
-Interactive mind map visualizing Practical Organic Chemistry hosted on GitHub Pages for easy  visulalization and learning.
-Interactive mind map for Identification and Tests of Anions in practical Inorganic Chemistry hosted on GitHub Pages fror easy learning
-inorganic.html
+Interactive mind maps for practical chemistry, hosted on GitHub Pages.
+
+- [Practical Organic Chemistry mind map](https://kj3ch.github.io/MMP/)
+- [Anion tests: Practical Inorganic Chemistry mind map](https://kj3ch.github.io/MMP/inorganic.html)
