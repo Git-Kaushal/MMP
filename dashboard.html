@@ -1,545 +1,220 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Practical Chemistry Mind Maps | Topic Navigator</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/style.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.min.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MMP Topic Navigator</title>
 <style>
-:root{
-  --bg:#f4f7fb; --panel:#ffffff; --ink:#17202c; --muted:#5a6678; --line:#dbe3ee;
-  --brand:#1d4f91; --brand-ink:#ffffff; --accent:#0f8a7e; --chip:#e8f0fb; --hover:#eef3fa;
-}
-@media (prefers-color-scheme: dark){
-  :root{ --bg:#12161c; --panel:#1b212b; --ink:#e8edf4; --muted:#9aa7ba; --line:#2c3644;
-         --brand:#6aa3ec; --brand-ink:#0b1320; --accent:#3cc1b3; --chip:#243349; --hover:#242d3a; }
-}
-*{box-sizing:border-box;margin:0;padding:0}
-[hidden]{display:none!important}
-html,body{height:100%}
-body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45}
-button{font:inherit;color:inherit;cursor:pointer}
-.markmap-dark{background:#27272a;color:#fff}
-
-/* ---------- top bar ---------- */
-.top{height:56px;display:flex;align-items:center;gap:12px;padding:0 14px;background:var(--brand);color:var(--brand-ink)}
-.top .brand{font-weight:700;font-size:16px;white-space:nowrap}
-.top .brand span{font-weight:400;opacity:.85}
-.tabs{display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tab{border:1px solid transparent;background:rgba(255,255,255,.16);color:inherit;padding:7px 14px;border-radius:999px;white-space:nowrap;font-weight:600}
-.tab:hover{background:rgba(255,255,255,.26)}
-.tab[aria-selected="true"]{background:var(--brand-ink);color:var(--brand)}
-.icon-btn{display:none;background:rgba(255,255,255,.16);border:0;border-radius:8px;width:38px;height:38px;font-size:20px;color:inherit}
-.top .help{background:transparent;border:1px solid rgba(255,255,255,.55);color:inherit;border-radius:999px;padding:6px 14px;font-weight:600;white-space:nowrap}
-.top .help:hover{background:rgba(255,255,255,.18)}
-
-/* ---------- layout ---------- */
-.layout{display:flex;height:calc(100vh - 56px);height:calc(100dvh - 56px)}
-aside{width:330px;flex:0 0 330px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-.side-head{padding:12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
-.side-head input{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
-.side-head input:focus{outline:2px solid var(--brand);outline-offset:0}
-.btn{background:var(--chip);color:var(--brand);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-weight:600}
-.btn:hover:not(:disabled){background:var(--hover)}
-.btn:disabled{opacity:.4;cursor:default}
-.btn.small{padding:6px 10px;font-size:13px}
-.btn.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
-#outline{flex:1;overflow:auto;padding:8px 6px 24px}
-#outline ul{list-style:none}
-#outline ul ul{margin-left:16px;border-left:1px solid var(--line);padding-left:4px}
-.row{display:flex;align-items:flex-start;gap:2px;border-radius:8px}
-.row:hover{background:var(--hover)}
-.row.active{background:var(--chip)}
-.row.active .lab{color:var(--brand);font-weight:700}
-.tog{flex:0 0 26px;height:30px;border:0;background:none;color:var(--muted);font-size:12px;transition:transform .15s}
-.tog.open{transform:rotate(90deg)}
-.tog.none{visibility:hidden}
-.lab{flex:1;text-align:left;background:none;border:0;padding:6px 6px 6px 2px;border-radius:6px;line-height:1.35}
-.none-found{padding:16px;color:var(--muted)}
-
-/* ---------- main area ---------- */
-main{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
-.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;justify-content:space-between;padding:8px 14px;background:var(--panel);border-bottom:1px solid var(--line)}
-.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:14px;min-width:0}
-.crumbs button{background:none;border:0;color:var(--brand);padding:2px 4px;border-radius:4px;text-align:left}
-.crumbs button:hover{text-decoration:underline}
-.crumbs .sep{color:var(--muted)}
-.crumbs .cur{font-weight:700}
-.ctrls{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.seg button{border:0;background:var(--panel);padding:6px 10px;font-size:13px;border-right:1px solid var(--line);color:var(--muted)}
-.seg button:last-child{border-right:0}
-.seg button.on{background:var(--brand);color:var(--brand-ink);font-weight:600}
-#stage{flex:1;position:relative;min-height:0;background:var(--panel)}
-#stage svg{display:block;width:100%;height:100%}
-#welcome{flex:1;overflow:auto;padding:22px 18px 40px}
-.wrap{max-width:980px;margin:0 auto}
-.wrap h1{font-size:24px;margin-bottom:4px}
-.lead{color:var(--muted);margin-bottom:16px}
-.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:20px}
-.step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-.step b{display:inline-flex;width:24px;height:24px;border-radius:50%;background:var(--brand);color:var(--brand-ink);align-items:center;justify-content:center;font-size:13px;margin-right:6px}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-bottom:20px}
-.card{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
-.card:hover{border-color:var(--brand);box-shadow:0 2px 8px rgba(29,79,145,.18)}
-.card .t{font-weight:700}
-.card .m{font-size:12.5px;color:var(--muted)}
-.actions{display:flex;flex-wrap:wrap;gap:8px}
-.msg{padding:30px 18px;max-width:640px;margin:0 auto;color:var(--muted)}
-.msg b{color:var(--ink)}
-
-/* ---------- help + toast ---------- */
-.overlay{position:fixed;inset:0;background:rgba(10,15,25,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
-.sheet{background:var(--panel);color:var(--ink);border-radius:14px;max-width:640px;width:100%;max-height:90vh;overflow:auto;padding:20px 22px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
-.sheet h2{font-size:20px;margin-bottom:10px}
-.sheet ol{margin:0 0 14px 20px}
-.sheet li{margin-bottom:8px}
-.sheet .tip{background:var(--chip);border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:14px}
-#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#222c3a;color:#fff;padding:9px 16px;border-radius:999px;font-size:14px;z-index:60}
-#backdrop{display:none}
-.help .short{display:none}
-
-/* ---------- phones ---------- */
-@media (max-width:820px){
-  .icon-btn{display:inline-flex;align-items:center;justify-content:center}
-  .top .brand{display:none}
-  .tab{padding:6px 11px}
-  .top .help{padding:6px 12px}
-  .help .long{display:none}
-  .help .short{display:inline;font-weight:700}
-  aside{position:fixed;left:0;top:56px;bottom:0;width:min(88vw,340px);z-index:30;transform:translateX(-102%);transition:transform .2s;box-shadow:4px 0 18px rgba(0,0,0,.25)}
-  body.drawer aside{transform:none}
-  body.drawer #backdrop{display:block;position:fixed;inset:56px 0 0 0;background:rgba(10,15,25,.45);z-index:25}
-}
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1d2433;--mut:#667085;--acc:#3b5bdb;--line:#e3e7ef}
+@media(prefers-color-scheme:dark){:root{--bg:#12151c;--card:#1b202b;--ink:#e8ebf2;--mut:#98a2b3;--acc:#7c93ff;--line:#2a3140}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;min-height:100vh}
+header{padding:12px 16px;background:var(--card);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+header h1{font-size:18px;margin:0 12px 0 0}
+.tabs,.chips{display:flex;gap:6px;flex-wrap:wrap}
+button,.btn{font:inherit;font-size:14px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 14px;border-radius:8px;text-decoration:none}
+button:hover,.btn:hover{border-color:var(--acc)}
+button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+button:disabled{opacity:.4;cursor:default}
+.sp{flex:1}
+main{flex:1;padding:16px;max-width:1200px;width:100%;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px}
+.cardx{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer}
+.cardx:hover{border-color:var(--acc)}
+.cardx b{display:block;margin-bottom:6px;font-size:14px}
+.cardx small{color:var(--mut)}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);margin-right:6px}
+.bar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.bar h2{margin:0;font-size:16px}
+#map{width:100%;height:68vh;background:var(--card);border:1px solid var(--line);border-radius:12px}
+#map.markmap{--markmap-text-color:var(--ink)}
+.help{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 18px;margin-bottom:16px}
+.help summary{cursor:pointer;font-weight:600}
+.help li{margin:4px 0;color:var(--mut)}
+.msg{padding:30px;text-align:center;color:var(--mut)}
+footer{padding:14px;text-align:center;font-size:13px;color:var(--mut);border-top:1px solid var(--line);background:var(--card)}
+footer a{color:var(--acc)}
 </style>
 </head>
 <body>
-
-<header class="top">
-  <button id="menuBtn" class="icon-btn" aria-label="Open topic list">&#9776;</button>
-  <div class="brand">Practical Chemistry <span>Mind Maps</span></div>
-  <nav id="tabs" class="tabs" role="tablist" aria-label="Choose a mind map"></nav>
-  <button id="helpBtn" class="help" type="button" aria-label="How to use"><span class="long">How to use</span><span class="short">?</span></button>
+<header>
+  <h1>MMP Topic Navigator</h1>
+  <div class="tabs" id="tabs"></div>
+  <span class="sp"></span>
+  <button id="home">Dashboard</button>
 </header>
 
-<div class="layout">
-  <aside id="side" aria-label="Topic list">
-    <div class="side-head">
-      <input id="search" type="search" placeholder="Search topics (e.g. limewater, Fe, sulfate)" autocomplete="off" aria-label="Search topics">
-      <button id="allBtn" class="btn small" type="button">Show whole map</button>
-    </div>
-    <div id="outline" role="tree"></div>
-  </aside>
-
-  <main>
-    <div id="bar" class="bar" hidden>
-      <div id="crumbs" class="crumbs"></div>
-      <div class="ctrls">
-        <button id="prev" class="btn small" type="button" title="Previous topic">&#9664; Prev</button>
-        <button id="next" class="btn small" type="button" title="Next topic">Next &#9654;</button>
-        <div id="seg" class="seg" role="group" aria-label="Amount of detail"></div>
-        <button id="copy" class="btn small" type="button" title="Copy a link that opens this exact topic">Copy link</button>
-        <button id="fs" class="btn small" type="button">Full screen</button>
-      </div>
-    </div>
-
-    <div id="welcome">
-      <div class="wrap">
-        <h1 id="wTitle">Choose a mind map</h1>
-        <p class="lead" id="wLead">Pick one topic to see only that part of the map.</p>
-        <div class="steps">
-          <div class="step"><b>1</b>Choose a map using the tabs at the top.</div>
-          <div class="step"><b>2</b>Tap a topic card below (or use the topic list) to open just that part.</div>
-          <div class="step"><b>3</b>Drag to move, scroll or pinch to zoom, tap a circle to fold or unfold a branch.</div>
-        </div>
-        <div id="cards" class="cards"></div>
-        <div class="actions">
-          <button id="allBtn2" class="btn" type="button">Show whole map</button>
-          <button id="helpBtn2" class="btn" type="button">Full instructions</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="stage" hidden></div>
-  </main>
-</div>
-<div id="backdrop"></div>
-
-<div id="help" class="overlay" hidden>
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="hTitle">
-    <h2 id="hTitle">How to use this navigator</h2>
+<main>
+  <details class="help" open>
+    <summary>How to use the mind map</summary>
     <ol>
-      <li><b>Choose a mind map.</b> Use the tabs at the top (Organic, Anions, Cations).</li>
-      <li><b>Pick one topic.</b> Tap a topic in the list on the left (on a phone, press the &#9776; button to open it), or tap a card on the start screen. Only that topic is drawn, not the whole long map. Use the &#9654; arrow beside a topic to see its sub-topics.</li>
-      <li><b>Move around.</b> Drag the map to move it. Scroll or pinch to zoom. The toolbar at the bottom right has zoom buttons and a <i>fit</i> button that centres the map again.</li>
-      <li><b>Open or close a branch.</b> Click the small circle at the end of a branch to fold or unfold it.</li>
-      <li><b>Change how much you see.</b> Use <i>Main branches</i>, <i>Sub-branches</i>, <i>Details</i> or <i>Everything</i> above the map.</li>
-      <li><b>Go to the next topic.</b> Press <i>Prev</i> or <i>Next</i> to move to the neighbouring topic.</li>
-      <li><b>Find something quickly.</b> Type a word in the search box (for example <i>limewater</i> or <i>Fe</i>). The list shows only matching topics.</li>
-      <li><b>Share a topic.</b> <i>Copy link</i> gives a link that opens exactly the topic you are viewing. Paste it in WhatsApp or email.</li>
-      <li><b>See everything.</b> <i>Show whole map</i> displays the complete mind map.</li>
+      <li>Choose a subject tab: <b>Organic</b>, <b>Inorganic (Anions)</b> or <b>Cations</b>.</li>
+      <li>On the dashboard, use the filter buttons (Ions &amp; Tests, Principles, Quick Reference, Traps) or just pick any card.</li>
+      <li>Each card opens <b>only that topic</b> as a small map. You never have to read the whole map at once.</li>
+      <li>Use <b>Previous</b> / <b>Next</b> (or the &larr; &rarr; keys) to move through the topics in order.</li>
+      <li><b>Click a circle</b> on a branch to collapse or expand it. "Expand all" opens every branch.</li>
+      <li><b>Scroll / pinch</b> to zoom and <b>drag</b> the background to move. "Fit" re-centres the map.</li>
+      <li>"Full map" opens the complete original map in a new tab.</li>
     </ol>
-    <p class="tip">On a phone, turn the screen sideways (landscape) for a wider view of the map.</p>
-    <button id="closeHelp" class="btn primary" type="button">Close</button>
+  </details>
+
+  <div id="dash"></div>
+
+  <div id="viewer" hidden>
+    <div class="bar">
+      <button id="prev">&larr; Previous</button>
+      <button id="next">Next &rarr;</button>
+      <h2 id="vt"></h2><span class="sp"></span>
+      <button id="exp">Expand all</button>
+      <button id="fit">Fit</button>
+      <a class="btn" id="full" target="_blank" rel="noopener">Full map</a>
+    </div>
+    <svg id="map"></svg>
   </div>
-</div>
-<div id="toast" hidden></div>
+</main>
 
-<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/index.js"></script>
+<footer>
+  Author: <b>Kaushal.J</b> &middot; JEE Advanced / NEET Trainer &middot;
+  <a href="https://git-kaushal.github.io/MMP/">https://git-kaushal.github.io/MMP/</a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-lib@0.17.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-view@0.17.0"></script>
 <script>
-window.WebFontConfig={custom:{families:["KaTeX_AMS","KaTeX_Caligraphic:n4,n7","KaTeX_Fraktur:n4,n7","KaTeX_Main:n4,n7,i4,i7","KaTeX_Math:i4,i7","KaTeX_Script","KaTeX_SansSerif:n4,n7,i4","KaTeX_Size1","KaTeX_Size2","KaTeX_Size3","KaTeX_Size4","KaTeX_Typewriter"]},active:function(){try{window.markmap.refreshHook.call()}catch(e){}}};
-</script>
-<script src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js" defer></script>
-<script>
-/* =====================================================================
-   TEACHER SETTINGS: to add a new mind map, add one line to this list.
-   id    = short word used in the link (no spaces)
-   label = text on the tab
-   title = heading shown on the start screen
-   file  = the mind map HTML file in the same folder
-   ===================================================================== */
-const MAPS = [
-  { id: 'organic',  label: 'Organic',  title: 'Practical Organic Chemistry',               file: 'index.html' },
-  { id: 'anions',   label: 'Anions',   title: 'Anion Analysis (Practical Inorganic)',      file: 'inorganic.html' },
-  { id: 'cations',  label: 'Cations',  title: 'Cation Analysis (Practical Inorganic)',     file: 'cations.html' }
-];
-/* ===================================================================== */
+/* ---------- CONFIG: where each map's Markdown lives ---------- */
+const BASE = "https://git-kaushal.github.io/MMP/";
+const PAGES = {
+  organic:   {title: "Organic",             file: "organic.html",   md: "data/organic.md"},
+  inorganic: {title: "Inorganic (Anions)",  file: "inorganic.html", md: "data/inorganic.md"},
+  cations:   {title: "Cations",             file: "cations.html",   md: "data/cations.md"}
+};
+const CATS = ["All", "Ions & Tests", "Principles", "Quick Reference", "Traps"];
 
-const $ = (s) => document.querySelector(s);
-const state = { mapId: null, map: null, current: null, levelUser: null };
-const CACHE = {};
-const LEVELS = [ {v:1, t:'Main branches'}, {v:2, t:'Sub-branches'}, {v:3, t:'Details'}, {v:-1, t:'Everything'} ];
-
-if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-  document.documentElement.classList.add('markmap-dark');
+/* ---------- helpers ---------- */
+const SUP = {"0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹","+":"⁺","-":"⁻"};
+const SUB = {"0":"₀","1":"₁","2":"₂","3":"₃","4":"₄","5":"₅","6":"₆","7":"₇","8":"₈","9":"₉","+":"₊","-":"₋","s":"ₛ","p":"ₚ"};
+const conv = (s, m) => [...s].map(c => m[c] || c).join("");
+// $K_{sp}$ -> Kₛₚ ,  $Cu^{2+}$ -> Cu²⁺
+function tex(md){
+  return md.replace(/\$([^$\n]+)\$/g, (_, t) => t
+    .replace(/\\leftrightarrow/g, "↔").replace(/\\rightarrow/g, "→")
+    .replace(/\^\{([^}]*)\}|\^(.)/g, (m, a, b) => conv(a || b, SUP))
+    .replace(/_\{([^}]*)\}|_(.)/g,   (m, a, b) => conv(a || b, SUB))
+    .replace(/[{}]/g, ""));
 }
-
-/* ---------- reading a Markmap export file ---------- */
-function extractTree(html) {
-  const k = html.lastIndexOf('window.markmap,');
-  if (k < 0) throw new Error('marker not found');
-  const i = html.indexOf('{"content"', k);
-  if (i < 0) throw new Error('data not found');
-  let depth = 0, inStr = false, esc = false;
-  for (let j = i; j < html.length; j++) {
-    const c = html[j];
-    if (inStr) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inStr = false; }
-    else if (c === '"') inStr = true;
-    else if (c === '{') depth++;
-    else if (c === '}') { depth--; if (depth === 0) return JSON.parse(html.slice(i, j + 1)); }
+function category(t){
+  if (/trap/i.test(t)) return "Traps";
+  if (/decision|algorithm|comparison|clue|rapid|matrix|high-yield|identification|interpretation|observation|safety/i.test(t)) return "Quick Reference";
+  if (/strategy|principle|objective|equilibrium|concept|connection|amphoteric|complex formation|redox|purpose/i.test(t)) return "Principles";
+  return "Ions & Tests";
+}
+/* Split at numbered headings: "### 1. X", "## I. X", "# II. X" */
+function split(md){
+  md = md.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "").replace(/^\s*---\s*$/gm, "");
+  md = tex(md);
+  const out = []; let c = null;
+  for (const l of md.split("\n")){
+    const h = l.match(/^(#{1,6})\s+(.*)$/);
+    let line = l;
+    if (h){
+      const L = h[1].length;
+      if (/^([IVXL]+|\d+)\.\s/.test(h[2])) { c = {title: h[2].trim(), L, lines: []}; out.push(c); }
+      else if (c && L < c.L) c = null;           // heading above section level ends it
+      if (c) line = "#".repeat(Math.max(1, L - c.L + 1)) + " " + h[2];
+    }
+    if (c) c.lines.push(line);
   }
-  throw new Error('data not complete');
+  out.forEach(s => {
+    s.md = s.lines.join("\n");
+    s.count = (s.md.match(/^\s*(-|#)/gm) || []).length;
+    s.cat = category(s.title);
+  });
+  return out;
 }
 
-const tmp = document.createElement('div');
-function plainText(html) {
-  tmp.innerHTML = html || '';
-  tmp.querySelectorAll('.katex-mathml').forEach((e) => e.remove());
-  return tmp.textContent.replace(/[\u200b\s]+/g, ' ').trim();
-}
+/* ---------- app ---------- */
+const {Transformer, Markmap} = window.markmap;
+const tf = new Transformer();
+const $ = id => document.getElementById(id);
+let mm = null, cur = {page: null, i: -1}, cat = "All", expandAll = false, ready = false;
 
-function prep(node, path, parent) {
-  node.children = node.children || [];
-  node.path = path;
-  node.parent = parent;
-  node.plain = plainText(node.content);
-  node.hasMath = /class="katex/.test(node.content || '');
-  node.children.forEach((c, i) => prep(c, path.concat(i), node));
-}
-
-function subText(n) {
-  if (n._sub === undefined) n._sub = (n.plain + ' ' + n.children.map(subText).join(' ')).toLowerCase();
-  return n._sub;
-}
-
-/* outline = only the branch nodes (nodes that have children) */
-function buildOutline(root) {
-  const byNode = new Map();
-  const branch = (n) => n.children.filter((c) => c.children.length);
-  function make(n, parent) {
-    const o = { node: n, parent, kids: [], open: false };
-    byNode.set(n, o);
-    o.kids = branch(n).map((c) => make(c, o));
-    return o;
+function buildTabs(){
+  for (const k in PAGES){
+    const b = document.createElement("button");
+    b.textContent = PAGES[k].title; b.dataset.k = k;
+    b.onclick = () => go(k, -1);
+    $("tabs").appendChild(b);
   }
-  let top = root.children.slice();
-  if (top.length <= 4) {            /* one big wrapper heading: show its sections instead */
-    const flat = [];
-    top.forEach((n) => { const bk = branch(n); if (bk.length >= 8) flat.push(...bk); else flat.push(n); });
-    top = flat;
-  }
-  top = top.filter((n) => n.children.length);
-  const tops = top.map((n) => make(n, null));
-  if (tops.length <= 4) tops.forEach((o) => { o.open = true; });
-  return { tops, byNode };
 }
+function go(page, i){ location.hash = i < 0 ? page : page + "/" + i; }
 
-async function getMap(id) {
-  if (CACHE[id]) return CACHE[id];
-  const def = MAPS.find((m) => m.id === id);
-  const res = await fetch(def.file, { cache: 'no-cache' });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const root = extractTree(await res.text());
-  prep(root, [], null);
-  const { tops, byNode } = buildOutline(root);
-  return (CACHE[id] = { def, root, top: tops, byNode });
-}
+function render(){
+  const P = PAGES[cur.page]; if (!P) return;
+  [...$("tabs").children].forEach(b => b.classList.toggle("on", b.dataset.k === cur.page));
+  $("full").href = BASE + P.file;
+  if (!ready){ $("dash").innerHTML = '<div class="msg">Loading…</div>'; return; }
+  if (!P.sections){ $("dash").innerHTML = '<div class="msg">Could not load ' + P.md +
+      '. Check that the file exists in the MMP/data folder.</div>'; $("viewer").hidden = true; return; }
 
-/* ---------- small helpers ---------- */
-function el(tag, cls, text) {
-  const e = document.createElement(tag);
-  if (cls) e.className = cls;
-  if (text !== undefined) e.textContent = text;
-  return e;
-}
-function setLabel(target, node) {
-  if (node.hasMath) target.innerHTML = node.content; else target.textContent = node.plain;
-}
-function toast(msg) {
-  const t = $('#toast'); t.textContent = msg; t.hidden = false;
-  clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 1900);
-}
-function curLevel() {
-  if (state.levelUser !== null) return state.levelUser;
-  return state.current === 'all' ? 2 : -1;
-}
-
-/* ---------- tabs ---------- */
-function renderTabs() {
-  const box = $('#tabs'); box.replaceChildren();
-  MAPS.forEach((m) => {
-    const b = el('button', 'tab', m.label);
-    b.type = 'button'; b.setAttribute('role', 'tab');
-    b.setAttribute('aria-selected', String(m.id === state.mapId));
-    b.addEventListener('click', () => openMap(m.id));
-    box.appendChild(b);
-  });
-}
-
-/* ---------- topic list (sidebar) ---------- */
-function renderOutline() {
-  const out = $('#outline');
-  if (!state.map) { out.replaceChildren(); return; }
-  const q = $('#search').value.trim().toLowerCase();
-  const ul = el('ul');
-  state.map.top.forEach((o) => { const li = renderItem(o, q); if (li) ul.appendChild(li); });
-  if (!ul.children.length) { out.replaceChildren(el('p', 'none-found', 'No topic found. Try a different word.')); return; }
-  out.replaceChildren(ul);
-  const act = out.querySelector('.row.active');
-  if (act && !q) act.scrollIntoView({ block: 'nearest' });
-}
-function renderItem(o, q) {
-  if (q && !subText(o.node).includes(q)) return null;
-  const li = el('li');
-  const row = el('div', 'row' + (state.current === o ? ' active' : ''));
-  const open = q ? true : o.open;
-  const tog = el('button', 'tog' + (o.kids.length ? (open ? ' open' : '') : ' none'), '\u25B6');
-  tog.type = 'button';
-  tog.setAttribute('aria-label', 'Show or hide sub-topics');
-  if (o.kids.length && !q) tog.addEventListener('click', () => { o.open = !o.open; renderOutline(); });
-  const lab = el('button', 'lab'); lab.type = 'button';
-  setLabel(lab, o.node);
-  lab.addEventListener('click', () => { select(o); closeDrawer(); });
-  row.append(tog, lab); li.appendChild(row);
-  if (o.kids.length && open) {
-    const ul = el('ul');
-    o.kids.forEach((k) => { const c = renderItem(k, q); if (c) ul.appendChild(c); });
-    if (ul.children.length) li.appendChild(ul);
-  }
-  return li;
-}
-
-/* ---------- start screen cards ---------- */
-function renderWelcome() {
-  const m = state.map;
-  $('#wTitle').textContent = m.def.title;
-  const box = $('#cards'); box.replaceChildren();
-  m.top.forEach((o) => {
-    const c = el('button', 'card'); c.type = 'button';
-    const t = el('span', 't'); setLabel(t, o.node);
-    const k = o.kids.length, pts = o.node.children.length;
-    const n = k ? k + (k === 1 ? ' sub-topic' : ' sub-topics') : pts + (pts === 1 ? ' point' : ' points');
-    c.append(t, el('span', 'm', n));
-    c.addEventListener('click', () => select(o));
-    box.appendChild(c);
-  });
-}
-
-function showMessage(html) {
-  $('#bar').hidden = true; $('#stage').hidden = true; $('#welcome').hidden = false;
-  const w = $('#welcome'); w.replaceChildren(); const d = el('div', 'msg'); d.innerHTML = html; w.appendChild(d);
-}
-
-/* ---------- map drawing ---------- */
-function clean(n, titleFallback) {
-  return {
-    content: (!n.content && titleFallback) ? titleFallback : n.content,
-    children: n.children.map((c) => clean(c)),
-    payload: n.payload
-  };
-}
-function renderMap() {
-  const stage = $('#stage');
-  stage.replaceChildren();
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('id', 'mindmap'); stage.appendChild(svg);
-  const all = state.current === 'all';
-  const node = all ? state.map.root : state.current.node;
-  const data = clean(node, state.map.def.title);
-  const opts = markmap.deriveOptions({ initialExpandLevel: curLevel(), duration: 350, maxWidth: 300,
-                                       spacingHorizontal: 90, spacingVertical: 8, zoom: true, pan: true });
-  const mm = markmap.Markmap.create('svg#mindmap', opts, data);
-  window.mm = mm;
-  try {
-    const tb = new markmap.Toolbar(); tb.attach(mm);
-    if (typeof tb.setBrand === 'function') tb.setBrand(false);
-    const bar = tb.render();
-    bar.setAttribute('style', 'position:absolute;bottom:16px;right:16px');
-    stage.appendChild(bar);
-  } catch (e) { /* toolbar is optional */ }
-}
-
-/* ---------- selecting things ---------- */
-function hashString() {
-  const p = new URLSearchParams();
-  p.set('map', state.mapId);
-  if (state.current === 'all') p.set('t', 'all');
-  else if (state.current) p.set('t', state.current.node.path.join('.'));
-  return p.toString();
-}
-function setHash() { history.replaceState(null, '', '#' + hashString()); }
-/* a pasted or edited link, or the browser Back button, opens the topic it points to */
-window.addEventListener('hashchange', () => {
-  if (location.hash.slice(1) === hashString()) return;
-  const p = new URLSearchParams(location.hash.slice(1));
-  openMap(p.get('map') || MAPS[0].id, p.get('t'));
-});
-function showWelcome() {
-  state.current = null;
-  const w = $('#welcome');
-  if (!$('#cards')) rebuildWelcome();
-  $('#bar').hidden = true; $('#stage').hidden = true; w.hidden = false;
-  renderOutline(); setHash();
-}
-function showAll() { state.current = 'all'; afterSelect(); }
-function select(o) {
-  for (let p = o.parent; p; p = p.parent) p.open = true;
-  state.current = o; afterSelect();
-}
-function afterSelect() {
-  $('#welcome').hidden = true; $('#stage').hidden = false; $('#bar').hidden = false;
-  renderCrumbs(); renderSeg(); updateNav(); renderOutline(); setHash();
-  renderMap();
-}
-function renderCrumbs() {
-  const c = $('#crumbs'); c.replaceChildren();
-  const home = el('button', '', state.map.def.label); home.type = 'button';
-  home.addEventListener('click', showWelcome); c.appendChild(home);
-  if (state.current === 'all') { c.append(el('span', 'sep', '\u203A'), el('span', 'cur', 'Whole map')); return; }
-  const chain = []; for (let o = state.current; o; o = o.parent) chain.unshift(o);
-  chain.forEach((o, i) => {
-    c.appendChild(el('span', 'sep', '\u203A'));
-    const last = i === chain.length - 1;
-    const b = el(last ? 'span' : 'button', last ? 'cur' : ''); if (!last) { b.type = 'button'; b.addEventListener('click', () => select(o)); }
-    setLabel(b, o.node); c.appendChild(b);
-  });
-}
-function renderSeg() {
-  const s = $('#seg'); s.replaceChildren();
-  LEVELS.forEach((l) => {
-    const b = el('button', curLevel() === l.v ? 'on' : '', l.t); b.type = 'button';
-    b.addEventListener('click', () => { state.levelUser = l.v; renderSeg(); renderMap(); });
-    s.appendChild(b);
-  });
-}
-function siblings() {
-  const o = state.current;
-  if (!o || o === 'all') return [];
-  return o.parent ? o.parent.kids : state.map.top;
-}
-function updateNav() {
-  const sib = siblings(), i = sib.indexOf(state.current);
-  $('#prev').disabled = !(i > 0);
-  $('#next').disabled = !(i >= 0 && i < sib.length - 1);
-}
-function step(d) { const sib = siblings(), i = sib.indexOf(state.current); if (sib[i + d]) select(sib[i + d]); }
-
-/* ---------- opening a map ---------- */
-function nodeAt(root, path) { let n = root; for (const i of path) { n = n.children[i]; if (!n) return null; } return n; }
-function oFor(map, node) { for (let n = node; n; n = n.parent) { const o = map.byNode.get(n); if (o) return o; } return null; }
-
-async function openMap(id, t) {
-  if (!MAPS.some((m) => m.id === id)) id = MAPS[0].id;
-  state.mapId = id; state.map = null; state.current = null; $('#search').value = '';
-  renderTabs(); renderOutline();
-  const def = MAPS.find((m) => m.id === id);
-  showMessage('<b>Loading ' + def.title + '...</b>');
-  try {
-    state.map = await getMap(id);
-  } catch (e) {
-    showMessage('<b>Could not open ' + def.file + '.</b><br>Check that <code>' + def.file +
-      '</code> is in the same folder as this page, and open this page from the website address (not by double-clicking the file on your computer).');
+  if (cur.i < 0){
+    $("viewer").hidden = true; $("dash").hidden = false;
+    $("dash").innerHTML = '<div class="bar"><h2>' + P.title + ' &ndash; choose a topic</h2></div><div class="chips"></div><div class="grid"></div>';
+    const chips = $("dash").querySelector(".chips");
+    CATS.forEach(c => {
+      const b = document.createElement("button"); b.textContent = c;
+      b.className = c === cat ? "on" : ""; b.onclick = () => { cat = c; render(); };
+      chips.appendChild(b);
+    });
+    const g = $("dash").querySelector(".grid");
+    P.sections.forEach((s, i) => {
+      if (cat !== "All" && s.cat !== cat) return;
+      const d = document.createElement("div"); d.className = "cardx";
+      d.innerHTML = '<b></b><span class="tag"></span><small>' + s.count + ' nodes</small>';
+      d.querySelector("b").textContent = s.title;
+      d.querySelector(".tag").textContent = s.cat;
+      d.onclick = () => go(cur.page, i); g.appendChild(d);
+    });
     return;
   }
-  rebuildWelcome();
-  renderOutline();
-  if (t === 'all') showAll();
-  else if (t) {
-    const n = nodeAt(state.map.root, t.split('.').filter((x) => x !== '').map(Number));
-    const o = n && oFor(state.map, n);
-    if (o) select(o); else showWelcome();
-  } else showWelcome();
-}
-function rebuildWelcome() {
-  const w = $('#welcome'); w.replaceChildren();
-  w.innerHTML =
-    '<div class="wrap"><h1 id="wTitle"></h1>' +
-    '<p class="lead">Pick one topic to see only that part of the map.</p>' +
-    '<div class="steps"><div class="step"><b>1</b>Choose a map using the tabs at the top.</div>' +
-    '<div class="step"><b>2</b>Tap a topic card below (or use the topic list) to open just that part.</div>' +
-    '<div class="step"><b>3</b>Drag to move, scroll or pinch to zoom, tap a circle to fold or unfold a branch.</div></div>' +
-    '<div id="cards" class="cards"></div>' +
-    '<div class="actions"><button id="allBtn2" class="btn" type="button">Show whole map</button>' +
-    '<button id="helpBtn2" class="btn" type="button">Full instructions</button></div></div>';
-  $('#allBtn2').addEventListener('click', showAll);
-  $('#helpBtn2').addEventListener('click', () => { $('#help').hidden = false; });
-  renderWelcome();
+  $("dash").hidden = true; $("viewer").hidden = false;
+  const s = P.sections[cur.i];
+  $("vt").textContent = s.title + "  (" + (cur.i + 1) + "/" + P.sections.length + ")";
+  $("prev").disabled = cur.i === 0;
+  $("next").disabled = cur.i === P.sections.length - 1;
+  $("exp").textContent = expandAll ? "Collapse" : "Expand all";
+  $("map").innerHTML = "";
+  const {root} = tf.transform(s.md);
+  mm = Markmap.create($("map"), {autoFit: true, duration: 300, maxWidth: 300,
+        initialExpandLevel: expandAll ? -1 : 3}, root);
+  window.scrollTo(0, 0);
 }
 
-/* ---------- drawer, help, buttons ---------- */
-function closeDrawer() { document.body.classList.remove('drawer'); }
-$('#menuBtn').addEventListener('click', () => document.body.classList.toggle('drawer'));
-$('#backdrop').addEventListener('click', closeDrawer);
-$('#helpBtn').addEventListener('click', () => { $('#help').hidden = false; });
-$('#closeHelp').addEventListener('click', () => { $('#help').hidden = true; });
-$('#help').addEventListener('click', (e) => { if (e.target.id === 'help') $('#help').hidden = true; });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('#help').hidden = true; closeDrawer(); } });
-$('#allBtn').addEventListener('click', () => { if (state.map) { showAll(); closeDrawer(); } });
-$('#search').addEventListener('input', renderOutline);
-$('#prev').addEventListener('click', () => step(-1));
-$('#next').addEventListener('click', () => step(1));
-$('#copy').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(location.href); toast('Link copied'); }
-  catch (e) { window.prompt('Copy this link:', location.href); }
-});
-if (document.fullscreenEnabled) {
-  $('#fs').addEventListener('click', () => {
-    if (document.fullscreenElement) document.exitFullscreen(); else $('#stage').requestFullscreen();
-  });
-} else { $('#fs').hidden = true; }
-let rz; window.addEventListener('resize', () => {
-  clearTimeout(rz); rz = setTimeout(() => { if (window.mm && typeof window.mm.fit === 'function' && !$('#stage').hidden) window.mm.fit(); }, 200);
-});
+function fromHash(){
+  const [p, i] = location.hash.slice(1).split("/");
+  const page = PAGES[p] ? p : Object.keys(PAGES)[0];
+  const secs = PAGES[page].sections;
+  cur = {page, i: (i !== undefined && secs && secs[+i]) ? +i : -1};
+  render();
+}
 
-/* ---------- start ---------- */
-(function init() {
-  const p = new URLSearchParams(location.hash.slice(1));
-  openMap(p.get('map') || MAPS[0].id, p.get('t'));
-})();
+$("prev").onclick = () => go(cur.page, cur.i - 1);
+$("next").onclick = () => go(cur.page, cur.i + 1);
+$("fit").onclick  = () => mm && mm.fit();
+$("exp").onclick  = () => { expandAll = !expandAll; render(); };
+$("home").onclick = () => go(cur.page || Object.keys(PAGES)[0], -1);
+document.addEventListener("keydown", e => {
+  if (cur.i < 0) return;
+  if (e.key === "ArrowLeft"  && !$("prev").disabled) $("prev").click();
+  if (e.key === "ArrowRight" && !$("next").disabled) $("next").click();
+});
+window.addEventListener("hashchange", fromHash);
+
+buildTabs(); fromHash();
+Promise.all(Object.keys(PAGES).map(k =>
+  fetch(PAGES[k].md).then(r => r.ok ? r.text() : Promise.reject())
+    .then(t => { PAGES[k].sections = split(t); }).catch(() => {})
+)).then(() => { ready = true; fromHash(); });
 </script>
 </body>
 </html>
