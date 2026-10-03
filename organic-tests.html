@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Organic Test Lab | MMP</title>
+<style>
+:root{--bg:#fff7ed;--card:#fff;--ink:#3a1f0b;--mut:#8a6a52;--acc:#ea580c;--line:#fde0c5;--ok:#15803d;--no:#b91c1c}
+@media(prefers-color-scheme:dark){:root{--bg:#1a1410;--card:#241c16;--ink:#f5e9df;--mut:#b9a392;--acc:#fb923c;--line:#3a2d23}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
+header{padding:12px 16px;background:linear-gradient(90deg,#ea580c,#f59e0b);color:#fff;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;flex:1}
+a.btn,button{font:inherit;font-size:14px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 14px;border-radius:8px;text-decoration:none}
+button:hover,a.btn:hover{border-color:var(--acc)}
+button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+button.go{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:600}
+main{flex:1;max-width:1200px;width:100%;margin:0 auto;padding:16px;display:grid;grid-template-columns:230px 1fr;gap:16px}
+@media(max-width:800px){main{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+#tl{display:flex;flex-direction:column;gap:6px}
+#tl button{text-align:left}
+#tl small{display:block;color:var(--mut);font-size:11px}
+#tl button.on small{color:#ffe}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.stage{display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:start}
+@media(max-width:600px){.stage{grid-template-columns:1fr}}
+svg{width:100%;max-width:200px;height:auto;display:block;margin:0 auto}
+#liq{transition:fill 1.2s}
+#ppt,#cloud,#mir,#ring{transition:opacity 1.2s,fill 1.2s;opacity:0}
+.drop{opacity:0}
+.run .drop{animation:fall .6s ease-in 3}
+@keyframes fall{0%{opacity:1;transform:translateY(0)}90%{opacity:1;transform:translateY(100px)}100%{opacity:0;transform:translateY(100px)}}
+#bub circle{opacity:0}
+#bub.on circle{animation:rise 1.4s infinite}
+@keyframes rise{0%{transform:translateY(0);opacity:.9}100%{transform:translateY(-120px);opacity:0}}
+.res h3{margin:0 0 6px}
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;color:#fff;margin-bottom:8px}
+.res p{margin:6px 0}
+.eq{background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:8px 10px;font-size:13px}
+.mut{color:var(--mut);font-size:13px}
+#pq{margin:10px 0}
+#pq .q{background:var(--bg);border:1px solid var(--acc);border-radius:10px;padding:10px 12px}
+#pq button{margin:6px 6px 0 0;font-weight:600}
+.fb{padding:6px 10px;border-radius:8px;margin:8px 0;font-weight:600;color:#fff}
+footer{padding:14px;text-align:center;font-size:13px;color:var(--mut);border-top:1px solid var(--line);background:var(--card)}
+footer a{color:var(--acc)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Organic Test Lab: see every test happen</h1>
+  <a class="btn" href="dashboard.html">&larr; Topic Navigator</a>
+</header>
+
+<main>
+  <div class="panel"><b>1. Choose a test</b><div id="tl" style="margin-top:8px"></div></div>
+
+  <div class="panel">
+    <div id="info" class="mut">Pick a test on the left to begin.</div>
+    <div class="chips" id="samples"></div>
+    <div class="stage">
+      <svg id="tube" viewBox="0 0 160 290" aria-label="Test tube">
+        <defs>
+          <clipPath id="cp"><path d="M45 0V215A35 35 0 0 0 115 215V0Z"/></clipPath>
+          <linearGradient id="sv" x1="0" x2="1"><stop offset="0" stop-color="#9ca3af"/><stop offset=".5" stop-color="#f9fafb"/><stop offset="1" stop-color="#9ca3af"/></linearGradient>
+        </defs>
+        <g clip-path="url(#cp)">
+          <rect id="liq" x="40" y="90" width="80" height="200" fill="#dbeafe"/>
+          <rect id="ppt" x="40" y="232" width="80" height="40" fill="#fff" stroke="#94a3b8"/>
+          <rect id="cloud" x="40" y="90" width="80" height="200" fill="#fff"/>
+          <rect id="ring" x="40" y="150" width="80" height="12" fill="#7e22ce"/>
+          <g id="mir"><rect x="45" y="92" width="6" height="140" fill="url(#sv)"/><rect x="109" y="92" width="6" height="140" fill="url(#sv)"/><path d="M48 232Q80 262 112 232V248Q80 276 48 248Z" fill="url(#sv)"/></g>
+          <g id="bub"><circle cx="62" cy="225" r="4" fill="#fff" stroke="#94a3b8" style="animation-delay:0s"/><circle cx="80" cy="230" r="3" fill="#fff" stroke="#94a3b8" style="animation-delay:.3s"/><circle cx="98" cy="226" r="5" fill="#fff" stroke="#94a3b8" style="animation-delay:.6s"/><circle cx="72" cy="232" r="3" fill="#fff" stroke="#94a3b8" style="animation-delay:.9s"/><circle cx="90" cy="228" r="4" fill="#fff" stroke="#94a3b8" style="animation-delay:1.1s"/></g>
+        </g>
+        <path d="M45 10V215A35 35 0 0 0 115 215V10" fill="none" stroke="#64748b" stroke-width="3"/>
+        <circle class="drop" cx="80" cy="-10" r="5" fill="#f97316" transform="translate(0,20)"/>
+      </svg>
+      <div>
+        <div id="lbl" class="mut" style="margin-bottom:10px"></div>
+        <label class="mut"><input type="checkbox" id="pm" checked> Predict first (quiz mode)</label>
+        <span id="score" class="mut" style="margin-left:10px"></span>
+        <div id="pq"></div>
+        <button class="go" id="run">2. Add reagent</button>
+        <button id="rst">Reset</button>
+        <div id="res" class="res" style="margin-top:14px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Author: <b>Kaushal.J</b> &middot; JEE Advanced / NEET Trainer &middot;
+  <a href="https://git-kaushal.github.io/MMP/">https://git-kaushal.github.io/MMP/</a>
+  <div style="margin-top:4px">Colours are typical illustrations. Real results vary with concentration and lighting. Never smell or taste chemicals; heat only in a lab.</div>
+</footer>
+
+<script>
+/* s0 = reagent colour; s = [sample, outcome index]; o = outcomes
+   l liquid colour, p precipitate, t turbidity, m mirror, r ring colour, g gas */
+const T = [
+{n:"NaHCO₃ test",f:"Carboxylic acid",rg:"Sodium bicarbonate solution",s0:"#dbeafe",eq:"RCOOH + NaHCO₃ → RCOONa + CO₂↑ + H₂O",
+ s:[["Ethanoic acid",1],["Benzoic acid",1],["Phenol",0],["Ethanol",0]],
+ o:[{o:"No effervescence.",i:"Not a carboxylic acid. Phenols are too weakly acidic to release CO₂."},{g:1,o:"Brisk effervescence; CO₂ evolved.",i:"Carboxylic acid present."}]},
+{n:"Tollens' test",f:"Aldehyde",rg:"Ammoniacal silver nitrate, warm gently",s0:"#e0f2fe",eq:"RCHO + 2[Ag(NH₃)₂]⁺ + 3OH⁻ → RCOO⁻ + 2Ag↓ + 4NH₃ + 2H₂O",
+ s:[["Ethanal",1],["Benzaldehyde",1],["Glucose",1],["Propanone",0],["Ethanol",0]],
+ o:[{o:"No change; no mirror.",i:"No aldehyde. Ketones and alcohols do not reduce Tollens' reagent."},{m:1,o:"Bright silver mirror on the inner wall.",i:"Aldehyde (or another reducing group, such as in glucose)."}]},
+{n:"Fehling's test",f:"Aliphatic aldehyde / reducing sugar",rg:"Fehling A + B, heat",s0:"#1d4ed8",eq:"RCHO + 2Cu²⁺ + 5OH⁻ → RCOO⁻ + Cu₂O↓ + 3H₂O",
+ s:[["Ethanal",1],["Glucose",1],["Benzaldehyde",0],["Propanone",0],["Sucrose",0]],
+ o:[{o:"Solution stays deep blue.",i:"No response. Aromatic aldehydes, ketones and sucrose (non-reducing) do not reduce Fehling's solution."},{l:"#60a5fa",p:"#b45309",o:"Brick-red Cu₂O precipitate on heating.",i:"Aliphatic aldehyde or reducing sugar."}]},
+{n:"2,4-DNP test",f:"Aldehyde or ketone (carbonyl)",rg:"2,4-Dinitrophenylhydrazine",s0:"#fde68a",eq:"R₂C=O + 2,4-DNP → 2,4-dinitrophenylhydrazone↓ + H₂O",
+ s:[["Propanone",1],["Ethanal",1],["Benzaldehyde",1],["Ethanol",0],["Ethanoic acid",0]],
+ o:[{o:"No precipitate.",i:"No aldehyde/ketone carbonyl. Acids do not respond."},{p:"#f97316",o:"Yellow-orange precipitate.",i:"Carbonyl compound (aldehyde or ketone). Use Tollens' to separate them."}]},
+{n:"Lucas test",f:"1° / 2° / 3° alcohols",rg:"Conc. HCl + anhydrous ZnCl₂",s0:"#e0f2fe",eq:"ROH + HCl (ZnCl₂) → RCl (turbid) + H₂O; rate: 3° > 2° > 1°",
+ s:[["2-Methylpropan-2-ol (3°)",2],["Propan-2-ol (2°)",1],["Butan-1-ol (1°)",0]],
+ o:[{o:"No turbidity at room temperature.",i:"Primary alcohol."},{t:.55,o:"Turbidity appears slowly (about 5 minutes).",i:"Secondary alcohol."},{t:.95,o:"Turbidity appears immediately.",i:"Tertiary alcohol: most stable carbocation, fastest SN1."}]},
+{n:"Neutral FeCl₃ test",f:"Phenol",rg:"Neutral ferric chloride",s0:"#fef08a",eq:"6ArOH + Fe³⁺ → [Fe(OAr)₆]³⁻ + 6H⁺",
+ s:[["Phenol",1],["Salicylic acid",1],["Ethanol",0],["Propanone",0]],
+ o:[{o:"No colour change.",i:"No phenolic –OH."},{l:"#7c3aed",o:"Violet/purple colour.",i:"Phenolic –OH present."}]},
+{n:"Bromine water test",f:"Unsaturation / phenol",rg:"Bromine water (orange-brown)",s0:"#f59e0b",eq:"C=C + Br₂ → C(Br)–C(Br);  C₆H₅OH + 3Br₂ → 2,4,6-tribromophenol↓ + 3HBr",
+ s:[["Phenol",2],["Cyclohexene",1],["Hexane",0],["Benzene",0]],
+ o:[{o:"Orange colour stays.",i:"No C=C or activated ring. Alkanes and benzene do not react quickly."},{l:"#f1f5f9",o:"Orange colour disappears.",i:"Unsaturation (C=C or C≡C)."},{l:"#f1f5f9",p:"#f8fafc",o:"Decolourised with a white precipitate.",i:"Phenol: 2,4,6-tribromophenol forms."}]},
+{n:"Baeyer's test",f:"Unsaturation",rg:"Cold dilute alkaline KMnO₄ (purple)",s0:"#7e22ce",eq:"C=C + [O] + H₂O → diol; MnO₄⁻ → MnO₂ (brown)",
+ s:[["Hex-1-ene",1],["Cyclohexene",1],["Hexane",0],["Benzene",0]],
+ o:[{o:"Purple colour stays.",i:"No easily oxidised C=C."},{l:"#f1f5f9",p:"#78350f",o:"Purple disappears; brown MnO₂ forms.",i:"Unsaturation (alkene/alkyne)."}]},
+{n:"Carbylamine test",f:"Primary amine",rg:"CHCl₃ + alcoholic KOH, heat (fume hood)",s0:"#e0f2fe",eq:"RNH₂ + CHCl₃ + 3KOH → RNC + 3KCl + 3H₂O",
+ s:[["Methylamine",1],["Aniline",1],["Dimethylamine",0],["Trimethylamine",0]],
+ o:[{o:"No isocyanide odour.",i:"Not a primary amine (secondary and tertiary amines do not respond)."},{g:1,o:"Foul isocyanide smell (judged only in a fume hood, never directly).",i:"Primary amine (aliphatic or aromatic)."}]},
+{n:"Ninhydrin test",f:"α-Amino acid",rg:"Ninhydrin, heat",s0:"#fef9c3",eq:"α-amino acid + ninhydrin → Ruhemann's purple",
+ s:[["Glycine",1],["Alanine",1],["Proline",2],["Ethanol",0]],
+ o:[{o:"No colour change.",i:"No free amino group."},{l:"#6d28d9",o:"Blue-violet colour on heating.",i:"α-Amino acid with a free –NH₂."},{l:"#facc15",o:"Yellow, not purple.",i:"Proline/hydroxyproline: secondary amino group."}]},
+{n:"Biuret test",f:"Protein / peptide bonds",rg:"CuSO₄ + NaOH",s0:"#38bdf8",eq:"Cu²⁺ + peptide bonds (alkaline) → violet complex",
+ s:[["Egg albumin",1],["Glycine",0],["Glucose",0]],
+ o:[{o:"Stays blue.",i:"No peptide bonds. Free amino acids do not give Biuret."},{l:"#7c3aed",o:"Violet/purple colour.",i:"Peptide bonds: protein or peptide."}]},
+{n:"Xanthoproteic test",f:"Aromatic amino acid residues",rg:"Conc. HNO₃, heat, then alkali",s0:"#e5e7eb",eq:"Nitration of the benzene ring → yellow; alkali → orange",
+ s:[["Tyrosine",1],["Egg albumin",1],["Glycine",0]],
+ o:[{o:"No yellow colour.",i:"No aromatic ring."},{l:"#facc15",o:"Yellow on heating; turns orange with alkali.",i:"Aromatic residue (Tyr, Trp; Phe weaker)."}]},
+{n:"Molisch test",f:"Carbohydrate (general)",rg:"α-Naphthol + conc. H₂SO₄ down the side",s0:"#fef3c7",eq:"Carbohydrate → furfural derivative + α-naphthol → purple ring",
+ s:[["Glucose",1],["Sucrose",1],["Starch",1],["Ethanol",0],["Propanone",0]],
+ o:[{o:"No ring.",i:"Not a carbohydrate."},{r:"#7e22ce",o:"Violet ring at the junction of the two layers.",i:"Carbohydrate present."}]},
+{n:"Seliwanoff's test",f:"Ketose vs aldose",rg:"Resorcinol + conc. HCl, warm",s0:"#fef3c7",eq:"Ketose → hydroxymethylfurfural faster → cherry-red",
+ s:[["Fructose (ketose)",2],["Glucose (aldose)",1],["Ethanol",0]],
+ o:[{o:"No colour.",i:"Not a sugar."},{l:"#fda4af",o:"Faint pink, slowly.",i:"Aldose (reacts slowly)."},{l:"#dc2626",o:"Cherry-red colour quickly.",i:"Ketose."}]},
+{n:"Iodine test",f:"Starch",rg:"Iodine solution (brown)",s0:"#d97706",eq:"Starch + I₂ → blue-black complex",
+ s:[["Starch",1],["Glycogen",2],["Glucose",0]],
+ o:[{o:"Brown colour stays.",i:"No starch."},{l:"#1e1b4b",o:"Blue-black colour.",i:"Starch present."},{l:"#9a3412",o:"Reddish-brown colour.",i:"Glycogen."}]}
+];
+
+const $ = id => document.getElementById(id);
+let t = null, sm = null;
+
+function build(){
+  T.forEach((x, i) => {
+    const b = document.createElement("button");
+    b.innerHTML = x.n + "<small>" + x.f + "</small>";
+    b.onclick = () => pick(i, b);
+    $("tl").appendChild(b);
+  });
+}
+function pick(i, b){
+  t = T[i]; sm = null;
+  [...$("tl").children].forEach(c => c.classList.toggle("on", c === b));
+  $("info").innerHTML = "<b>" + t.n + "</b> detects: " + t.f + "<br>Reagent: " + t.rg + "<br>Choose a sample to test:";
+  $("samples").innerHTML = "";
+  t.s.forEach((s, j) => {
+    const c = document.createElement("button"); c.textContent = s[0];
+    c.onclick = () => { sm = j; [...$("samples").children].forEach(k => k.classList.toggle("on", k === c)); reset(); };
+    $("samples").appendChild(c);
+  });
+  reset();
+}
+function reset(){
+  $("liq").style.fill = "#dbeafe";
+  ["ppt","cloud","mir","ring"].forEach(id => $(id).style.opacity = 0);
+  $("bub").classList.remove("on");
+  $("tube").classList.remove("run");
+  $("lbl").textContent = sm == null ? "" : "Tube: " + t.s[sm][0] + " (sample). Reagent not added yet.";
+  $("res").innerHTML = "";
+  $("pq").innerHTML = "";
+}
+const sc = {c: 0, n: 0, k: 0};
+function ask(){
+  if (!t) { $("res").textContent = "Choose a test first."; return; }
+  if (sm == null) { $("res").textContent = "Choose a sample first."; return; }
+  if (!$("pm").checked) { run(null); return; }
+  reset();
+  $("pq").innerHTML = '<div class="q"><b>Predict:</b> will <b>' + t.s[sm][0] + "</b> give a positive <b>" + t.n +
+    "</b>?<br><button id='gp'>Positive</button><button id='gn'>Negative</button></div>";
+  $("gp").onclick = () => run(true);
+  $("gn").onclick = () => run(false);
+}
+function run(guess){
+  const idx = t.s[sm][1], o = t.o[idx];
+  reset();
+  $("lbl").textContent = "Adding: " + t.rg;
+  $("tube").classList.add("run");
+  setTimeout(() => {
+    $("liq").style.fill = o.l || t.s0;
+    if (o.p) { $("ppt").style.fill = o.p; $("ppt").style.opacity = 1; }
+    $("cloud").style.opacity = o.t || 0;
+    $("mir").style.opacity = o.m ? 1 : 0;
+    if (o.r) { $("ring").style.fill = o.r; $("ring").style.opacity = 1; }
+    $("bub").classList.toggle("on", !!o.g);
+    $("tube").classList.remove("run");
+    const pos = idx > 0;
+    let fb = "";
+    if (guess !== null) {
+      const right = guess === pos;
+      sc.n++; sc.c += right ? 1 : 0; sc.k = right ? sc.k + 1 : 0;
+      fb = '<div class="fb" style="background:' + (right ? "var(--ok)" : "var(--no)") + '">' +
+        (right ? "Correct! You predicted " : "Not quite. You predicted ") + (guess ? "Positive" : "Negative") +
+        (right ? "." : ", but the result is " + (pos ? "Positive" : "Negative") + ". Read the inference below.") + "</div>";
+      $("score").textContent = "Score: " + sc.c + "/" + sc.n + " · streak " + sc.k;
+    }
+    $("res").innerHTML = fb +
+      '<span class="badge" style="background:' + (pos ? "var(--ok)" : "var(--no)") + '">' + (pos ? "Positive" : "Negative") + "</span>" +
+      "<h3>" + t.s[sm][0] + " + " + t.n + "</h3>" +
+      "<p><b>Observation:</b> " + o.o + "</p>" +
+      "<p><b>Inference:</b> " + o.i + "</p>" +
+      '<p class="eq">' + t.eq + "</p>";
+  }, 1900);
+}
+$("run").onclick = ask;
+$("rst").onclick = reset;
+build();
+</script>
+</body>
+</html>
