@@ -1,9 +1,21 @@
-# MMP
-Interactive mind maps for practical chemistry, hosted on GitHub Pages.
+# MMP: Mind Map Practicals
 
-**Start here (pick one topic at a time):** [Topic Navigator](https://git-kaushal.github.io/MMP/)
+Interactive mind maps for JEE Advanced / NEET practical chemistry.
 
-Direct links to the full maps:
-- [Practical Organic Chemistry mind map](https://git-kaushal.github.io/MMP/organic.html)
-- [Anion tests: Practical Inorganic Chemistry mind map](https://git-kaushal.github.io/MMP/inorganic.html)
-- [Cation analysis: Practical Inorganic Chemistry mind map](https://git-kaushal.github.io/MMP/cations.html)
+**Start here:** https://git-kaushal.github.io/MMP/dashboard.html
+
+## Maps
+- Organic: https://git-kaushal.github.io/MMP/organic.html
+- Inorganic (Anions): https://git-kaushal.github.io/MMP/inorganic.html
+- Cations: https://git-kaushal.github.io/MMP/cations.html
+
+## How to use
+Open the Topic Navigator, choose a subject, and pick a topic card to view
+only that part of the map. Use Previous / Next to move through topics.
+
+## Files
+- `dashboard.html`: topic navigator
+- `footer.js`: shared author footer
+- `data/`: Markdown source for each map
+
+Author: Kaushal.J, JEE Advanced / NEET Trainer
