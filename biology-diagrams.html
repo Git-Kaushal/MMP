@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEET Biology Diagram Lab | MMP</title>
+<style>
+:root{--bg:#fff7ed;--card:#fff;--ink:#3a1f0b;--mut:#8a6a52;--acc:#ea580c;--line:#fde0c5;--ok:#15803d;--no:#b91c1c}
+@media(prefers-color-scheme:dark){:root{--bg:#1a1410;--card:#241c16;--ink:#f5e9df;--mut:#b9a392;--acc:#fb923c;--line:#3a2d23}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
+header{padding:12px 16px;background:linear-gradient(90deg,#ea580c,#f59e0b);color:#fff;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;flex:1}
+a.btn,button{font:inherit;font-size:14px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 14px;border-radius:8px;text-decoration:none}
+button:hover,a.btn:hover{border-color:var(--acc)}
+button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+button:disabled{opacity:.5;cursor:default}
+main{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:16px}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.stage{display:grid;grid-template-columns:minmax(260px,430px) 1fr;gap:16px;margin-top:4px}
+@media(max-width:760px){.stage{grid-template-columns:1fr}}
+svg{width:100%;height:auto;display:block;background:var(--bg);border-radius:10px}
+.part{cursor:pointer}
+.part:hover{filter:brightness(1.1)}
+.part.hl{filter:drop-shadow(0 0 4px #ea580c) drop-shadow(0 0 8px #ea580c);animation:pul 1s infinite alternate}
+@keyframes pul{to{filter:drop-shadow(0 0 1px #ea580c)}}
+.quiz .part{cursor:default}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.mut{color:var(--mut);font-size:13px}
+.info h3{margin:0 0 6px}
+.q{font-weight:600;margin:0 0 8px}
+.opt{display:block;width:100%;text-align:left;margin:6px 0}
+.opt.right{background:var(--ok);color:#fff;border-color:var(--ok)}
+.opt.wrong{background:var(--no);color:#fff;border-color:var(--no)}
+.fb{padding:8px 10px;border-radius:8px;margin:8px 0;color:#fff;font-weight:600}
+footer{padding:14px;text-align:center;font-size:13px;color:var(--mut);border-top:1px solid var(--line);background:var(--card)}
+footer a{color:var(--acc)}
+</style>
+</head>
+<body>
+<header>
+  <h1>NEET Biology Diagram Lab</h1>
+  <a class="btn" href="dashboard.html">&larr; Topic Navigator</a>
+</header>
+
+<main>
+  <div class="row" id="dtabs"></div>
+  <div class="row">
+    <button id="mLearn" class="on">Learn: tap the parts</button>
+    <button id="mQuiz">Quiz: name the part</button>
+    <label class="mut"><input type="checkbox" id="mix"> Mix all diagrams (quiz)</label>
+    <span id="score" class="mut"></span>
+  </div>
+  <div class="panel">
+    <div class="mut" id="chap"></div>
+    <div class="stage" id="stage">
+      <div id="svgbox"></div>
+      <div class="info" id="side"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Author: <b>Kaushal.J</b> &middot; JEE Advanced / NEET Trainer &middot;
+  <a href="https://git-kaushal.github.io/MMP/">https://git-kaushal.github.io/MMP/</a>
+  <div style="margin-top:4px">These are simplified, original schematic drawings for practice. Always check proportions and labelling against your NCERT figures.</div>
+</footer>
+
+<script>
+const BL="#3b82f6", RD="#ef4444";
+const hRot = (n, f) => [...Array(n)].map((_, k) => `<g transform="rotate(${k * 360 / n} 150 150)">${f}</g>`).join("");
+const hM2 = (s, w) => s + `<g transform="translate(${w || 300} 0) scale(-1 1)">${s}</g>`;
+const hPol = (a, r) => [150 + r * Math.sin(a * Math.PI / 180), 150 - r * Math.cos(a * Math.PI / 180)];
+const hF = n => n.toFixed(1);
+const hArc = (a1, a2, r, c, w) => { const p = hPol(a1, r), q = hPol(a2, r), big = ((a2 - a1 + 360) % 360) > 180 ? 1 : 0;
+  return `<path d="M${hF(p[0])} ${hF(p[1])}A${r} ${r} 0 ${big} 1 ${hF(q[0])} ${hF(q[1])}" fill="none" stroke="${c}" stroke-width="${w}"/>`; };
+const hTick = a => { const p = hPol(a, 76), q = hPol(a, 106), d = `M${hF(p[0])} ${hF(p[1])}L${hF(q[0])} ${hF(q[1])}`;
+  return `<path d="${d}" stroke="#111" stroke-width="4"/><path d="${d}" stroke="rgba(0,0,0,0)" stroke-width="16"/>`; };
+const hLip = (x, top) => { const h = top ? 60 : 140, a = top ? 68 : 132, b = top ? 98 : 102;
+  return {h: `<circle cx="${x}" cy="${h}" r="7" fill="#fcd34d" stroke="#b45309"/>`, t: `<path d="M${x - 3} ${a}V${b}M${x + 3} ${a}V${b}" stroke="#a16207" stroke-width="2" fill="none"/>`}; };
+const hLips = [...Array(15)].flatMap((_, i) => [hLip(18 + i * 20, true), hLip(18 + i * 20, false)]);
+/* Each diagram: svg uses <g class="part" data-p="id">; parts = [id, name, fact] (fact never contains the name) */
+const D = [
+{id:"heart", t:"Human heart (internal structure)", ch:"Class 11: Body Fluids and Circulation", vb:"0 0 300 300",
+svg:`
+<g class="part" data-p="ao"><path d="M165 160V62Q165 36 195 36H245Q268 36 268 62V96" fill="none" stroke="${RD}" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="part" data-p="pa"><path d="M135 160V76Q135 48 104 46" fill="none" stroke="${BL}" stroke-width="16" stroke-linecap="round"/></g>
+<g class="part" data-p="vc"><path d="M68 14V94" stroke="${BL}" stroke-width="18" stroke-linecap="round"/></g>
+<g class="part" data-p="pv"><path d="M292 125H244" stroke="${RD}" stroke-width="12" stroke-linecap="round"/></g>
+<g class="part" data-p="ra"><rect x="50" y="90" width="70" height="62" rx="18" fill="#93c5fd" stroke="#1d4ed8" stroke-width="2"/></g>
+<g class="part" data-p="la"><rect x="180" y="90" width="70" height="62" rx="18" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/></g>
+<g class="part" data-p="rv"><path d="M50 160H146V266Q96 292 56 250Q44 205 50 160Z" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="2"/></g>
+<g class="part" data-p="lv"><path d="M154 160H250Q262 215 235 255Q200 286 154 268Z" fill="#fecaca" stroke="#b91c1c" stroke-width="7"/></g>
+<g class="part" data-p="sp"><rect x="146" y="158" width="8" height="112" fill="#6b7280"/></g>
+<g class="part" data-p="tv"><rect x="62" y="148" width="52" height="28" fill="rgba(0,0,0,0)"/><path d="M66 156H110M74 156l8 15M102 156l-8 15" stroke="#111" stroke-width="3" fill="none"/></g>
+<g class="part" data-p="bv"><rect x="192" y="148" width="46" height="28" fill="rgba(0,0,0,0)"/><path d="M196 156H234M204 156l7 15M226 156l-7 15" stroke="#111" stroke-width="3" fill="none"/></g>`,
+parts:[
+["ra","Right atrium","Receives deoxygenated blood from the body through the venae cavae; the SA node (pacemaker) lies in its wall."],
+["la","Left atrium","Receives oxygenated blood from the lungs through the pulmonary veins."],
+["rv","Right ventricle","Pumps deoxygenated blood to the lungs through the pulmonary artery; its wall is thinner than that of the left side."],
+["lv","Left ventricle","Has the thickest muscular wall; pumps oxygenated blood to the whole body through the aorta."],
+["tv","Tricuspid valve","Three flaps guarding the opening between the right atrium and right ventricle; prevents backflow."],
+["bv","Bicuspid (mitral) valve","Two flaps guarding the opening between the left atrium and left ventricle."],
+["ao","Aorta","Largest artery; carries oxygenated blood from the left ventricle to the body."],
+["pa","Pulmonary artery","The only artery that carries deoxygenated blood; runs from the right ventricle to the lungs."],
+["pv","Pulmonary veins","The only veins that carry oxygenated blood; lungs to the left atrium."],
+["vc","Vena cava","Superior and inferior vessels that bring deoxygenated blood from the body to the right atrium."],
+["sp","Interventricular septum","Muscular wall separating the two lower chambers so oxygenated and deoxygenated blood do not mix."]]},
+
+{id:"nephron", t:"Nephron", ch:"Class 11: Excretory Products and their Elimination", vb:"0 0 320 330",
+svg:`
+<rect x="0" y="0" width="320" height="150" fill="#fecaca" opacity=".35"/><rect x="0" y="150" width="320" height="180" fill="#fde68a" opacity=".35"/>
+<text x="8" y="14" font-size="10" fill="#7c2d12">Cortex</text><text x="8" y="164" font-size="10" fill="#7c2d12">Medulla</text>
+<g class="part" data-p="pc"><path d="M100 150Q86 124 100 100M100 150H160Q192 150 192 126" fill="none" stroke="#dc2626" stroke-width="3" stroke-dasharray="5 4"/></g>
+<g class="part" data-p="ea"><path d="M18 54L66 60" stroke="#dc2626" stroke-width="10" stroke-linecap="round"/></g>
+<g class="part" data-p="ef"><path d="M68 84L26 90V132Q26 150 62 150H98" fill="none" stroke="#dc2626" stroke-width="4" stroke-linecap="round"/></g>
+<g class="part" data-p="bc"><circle cx="82" cy="70" r="30" fill="#fde68a" stroke="#b45309" stroke-width="3"/></g>
+<g class="part" data-p="gl"><circle cx="82" cy="70" r="15" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/><path d="M72 66Q82 56 92 66Q82 76 72 74M74 78Q84 70 92 78" fill="none" stroke="#b91c1c"/></g>
+<g class="part" data-p="pct"><path d="M110 84L126 94L110 104L126 114L110 124L126 134" fill="none" stroke="#fb923c" stroke-width="9" stroke-linejoin="round"/></g>
+<g class="part" data-p="dl"><path d="M126 134L140 150V285Q158 306 176 285" fill="none" stroke="#fbbf24" stroke-width="6" stroke-linecap="round"/></g>
+<g class="part" data-p="al"><path d="M176 285V140" fill="none" stroke="#b45309" stroke-width="11" stroke-linecap="round"/></g>
+<g class="part" data-p="dct"><path d="M176 140L194 128L176 116L194 104L216 96" fill="none" stroke="#10b981" stroke-width="9" stroke-linejoin="round"/></g>
+<g class="part" data-p="cd"><path d="M216 96H252V305" fill="none" stroke="#8b5cf6" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/></g>`,
+parts:[
+["bc","Bowman's capsule","Double-walled cup of the renal corpuscle; its inner layer has podocytes that form filtration slits."],
+["gl","Glomerulus","Tuft of capillaries where ultrafiltration of blood occurs (GFR about 125 mL/min); forms the Malpighian body with the cup around it."],
+["ea","Afferent arteriole","Brings blood to the glomerulus; wider than the vessel that leaves it."],
+["ef","Efferent arteriole","Carries blood away from the glomerulus; narrower, keeping filtration pressure high; gives rise to the peritubular capillaries."],
+["pct","Proximal convoluted tubule (PCT)","Brush-border cuboidal epithelium; reabsorbs nearly all glucose and amino acids and 70–80% of water and electrolytes; secretes H⁺, K⁺ and NH₃."],
+["dl","Descending limb of loop of Henle","Permeable to water but almost impermeable to electrolytes; the filtrate becomes more concentrated."],
+["al","Ascending limb of loop of Henle","Impermeable to water; electrolytes pass out, so the filtrate becomes dilute."],
+["dct","Distal convoluted tubule (DCT)","Conditional reabsorption of Na⁺ and water; reabsorbs HCO₃⁻ and selectively secretes H⁺, K⁺ and NH₃ to maintain pH and Na–K balance."],
+["cd","Collecting duct","Runs from the cortex into the inner medulla; reabsorbs large amounts of water to give concentrated urine and keeps medullary osmolarity high."],
+["pc","Peritubular capillaries","Network around the tubule arising from the efferent arteriole; the vasa recta is its straight, hairpin part along the loop."]]},
+
+{id:"mito", t:"Mitochondrion", ch:"Class 11: Cell: The Unit of Life", vb:"0 0 300 240",
+svg:`
+<g class="part" data-p="ims"><ellipse cx="150" cy="120" rx="125" ry="80" fill="#fde68a"/></g>
+<g class="part" data-p="mx"><ellipse cx="150" cy="120" rx="106" ry="62" fill="#fdba74"/></g>
+<g class="part" data-p="cr"><path d="M92 62V108M126 60V112M160 60V112M194 62V108M110 178V132M144 180V128M178 180V128M212 176V134" stroke="#c2410c" stroke-width="6" stroke-linecap="round" fill="none"/></g>
+<g class="part" data-p="f1"><circle cx="153" cy="72" r="4.5" fill="#dc2626"/><circle cx="167" cy="82" r="4.5" fill="#dc2626"/><circle cx="153" cy="94" r="4.5" fill="#dc2626"/><circle cx="167" cy="104" r="4.5" fill="#dc2626"/><circle cx="137" cy="150" r="4.5" fill="#dc2626"/><circle cx="151" cy="162" r="4.5" fill="#dc2626"/></g>
+<g class="part" data-p="im"><ellipse cx="150" cy="120" rx="108" ry="64" fill="none" stroke="#c2410c" stroke-width="4"/></g>
+<g class="part" data-p="om"><ellipse cx="150" cy="120" rx="125" ry="80" fill="none" stroke="#92400e" stroke-width="5"/></g>
+<g class="part" data-p="dna"><circle cx="228" cy="122" r="12" fill="rgba(0,0,0,0)" stroke="#1d4ed8" stroke-width="3"/></g>
+<g class="part" data-p="rb"><circle cx="60" cy="112" r="3.5" fill="#374151"/><circle cx="68" cy="126" r="3.5" fill="#374151"/><circle cx="58" cy="136" r="3.5" fill="#374151"/><circle cx="76" cy="108" r="3.5" fill="#374151"/><circle cx="236" cy="150" r="3.5" fill="#374151"/></g>`,
+parts:[
+["om","Outer membrane","Smooth, porous boundary (porins) of the organelle; freely permeable to small molecules."],
+["ims","Intermembrane space","Narrow gap between the two membranes; H⁺ pumped here builds the proton gradient."],
+["im","Inner membrane","Selectively permeable; folded inward; carries the electron transport chain and ATP synthase."],
+["cr","Cristae","Infoldings that increase the surface area for oxidative phosphorylation."],
+["mx","Matrix","Dense fluid containing Krebs cycle enzymes, circular DNA and 70S ribosomes."],
+["f1","F₀–F₁ particles (ATP synthase)","Stalked knob-like particles on the folds; F₀ is a channel for H⁺, F₁ makes ATP from ADP and Pi."],
+["dna","Mitochondrial DNA","Circular, double-stranded DNA; makes the organelle semi-autonomous."],
+["rb","70S ribosomes","Smaller than the cytoplasmic 80S type; make some of the organelle's own proteins."]]},
+
+{id:"embryo", t:"Embryo sac (7-celled, 8-nucleate)", ch:"Class 12: Sexual Reproduction in Flowering Plants", vb:"0 0 300 325",
+svg:`
+<g class="part" data-p="in"><path d="M110 12C30 60 25 270 108 312M190 12C270 60 275 270 192 312" fill="none" stroke="#a16207" stroke-width="10" stroke-linecap="round"/></g>
+<g class="part" data-p="ch"><rect x="105" y="298" width="90" height="22" rx="9" fill="#ca8a04"/></g>
+<g class="part" data-p="mp"><rect x="116" y="2" width="68" height="40" fill="rgba(0,0,0,0)"/><path d="M122 4V38M178 4V38" stroke="#6b7280" stroke-width="2" stroke-dasharray="4 3"/></g>
+<g class="part" data-p="cc"><ellipse cx="150" cy="170" rx="62" ry="122" fill="#fef9c3" stroke="#65a30d" stroke-width="3"/></g>
+<g class="part" data-p="syn"><circle cx="122" cy="56" r="13" fill="#fdba74" stroke="#9a3412" stroke-width="2"/><circle cx="178" cy="56" r="13" fill="#fdba74" stroke="#9a3412" stroke-width="2"/></g>
+<g class="part" data-p="fa"><path d="M114 44l-5-12M122 43v-14M130 44l5-12M170 44l-5-12M178 43v-14M186 44l5-12" stroke="#9a3412" stroke-width="2.5" stroke-linecap="round"/></g>
+<g class="part" data-p="egg"><circle cx="150" cy="78" r="17" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/><circle cx="150" cy="82" r="5" fill="#7f1d1d"/></g>
+<g class="part" data-p="pn"><circle cx="140" cy="168" r="9" fill="#7c3aed"/><circle cx="162" cy="176" r="9" fill="#7c3aed"/></g>
+<g class="part" data-p="ap"><circle cx="122" cy="262" r="12" fill="#86efac" stroke="#15803d" stroke-width="2"/><circle cx="150" cy="276" r="12" fill="#86efac" stroke="#15803d" stroke-width="2"/><circle cx="178" cy="262" r="12" fill="#86efac" stroke="#15803d" stroke-width="2"/></g>`,
+parts:[
+["in","Integuments","Two protective layers around the nucellus of the ovule; they leave an opening at one end."],
+["mp","Micropyle","Small opening between the integuments, through which the pollen tube usually enters."],
+["ch","Chalaza","Basal end of the ovule, opposite the micropyle; the antipodal cells lie near it."],
+["cc","Central cell","Largest cell of the embryo sac; after triple fusion it becomes the primary endosperm cell."],
+["egg","Egg cell","Female gamete at the micropylar end; fuses with a male gamete (syngamy) to form the zygote."],
+["syn","Synergids","Two cells flanking the egg; together with it they make the egg apparatus."],
+["fa","Filiform apparatus","Finger-like cell-wall thickenings at the tip of the synergids that guide the pollen tube."],
+["pn","Polar nuclei","Two nuclei lying in the large central cell; with a male gamete they undergo triple fusion to form 3n PEN."],
+["ap","Antipodals","Three cells at the chalazal end of the embryo sac."]]},
+
+{id:"lac", t:"Lac operon", ch:"Class 12: Molecular Basis of Inheritance", vb:"0 0 400 240",
+svg:`
+<path d="M10 164H390" stroke="#374151" stroke-width="3"/>
+<g class="part" data-p="ig"><rect x="10" y="150" width="62" height="28" rx="4" fill="#a7f3d0" stroke="#047857" stroke-width="2"/></g>
+<g class="part" data-p="pr"><rect x="110" y="150" width="32" height="28" rx="4" fill="#fde68a" stroke="#b45309" stroke-width="2"/></g>
+<g class="part" data-p="op"><rect x="142" y="150" width="28" height="28" rx="4" fill="#fca5a5" stroke="#b91c1c" stroke-width="2"/></g>
+<g class="part" data-p="z"><rect x="170" y="150" width="82" height="28" rx="4" fill="#c4b5fd" stroke="#6d28d9" stroke-width="2"/></g>
+<g class="part" data-p="y"><rect x="252" y="150" width="62" height="28" rx="4" fill="#93c5fd" stroke="#1d4ed8" stroke-width="2"/></g>
+<g class="part" data-p="a"><rect x="314" y="150" width="62" height="28" rx="4" fill="#f9a8d4" stroke="#be185d" stroke-width="2"/></g>
+<g class="part" data-p="rp"><circle cx="158" cy="112" r="20" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="3"/><path d="M148 130v18h20v-18" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="3"/></g>
+<g class="part" data-p="rn"><ellipse cx="116" cy="118" rx="16" ry="12" fill="#fdba74" stroke="#c2410c" stroke-width="2"/></g>
+<g class="part" data-p="ind"><circle cx="212" cy="96" r="7" fill="#facc15" stroke="#a16207"/><circle cx="230" cy="86" r="7" fill="#facc15" stroke="#a16207"/><circle cx="246" cy="100" r="7" fill="#facc15" stroke="#a16207"/></g>`,
+parts:[
+["ig","Regulator gene (i)","Expressed all the time; codes for the repressor protein."],
+["pr","Promoter","Site where RNA polymerase binds to begin transcription of the structural genes."],
+["op","Operator","Site where the repressor binds; lies next to the promoter and can block transcription."],
+["z","lacZ gene","Codes for β-galactosidase, which breaks lactose into glucose and galactose."],
+["y","lacY gene","Codes for permease, which increases permeability of the cell to β-galactosides."],
+["a","lacA gene","Codes for transacetylase."],
+["rp","Repressor protein","Binds the operator when no sugar inducer is present; an allosteric protein."],
+["rn","RNA polymerase","Binds at the promoter and transcribes the structural genes into one polycistronic mRNA."],
+["ind","Inducer (lactose)","Binds the repressor and inactivates it, so the operator is free and transcription proceeds."]]},
+{id:"animal", t:"Animal cell", ch:"Class 11: Cell: The Unit of Life", vb:"0 0 300 260",
+svg:`
+<g class="part" data-p="pm"><ellipse cx="150" cy="130" rx="132" ry="106" fill="#fef3c7" stroke="#b45309" stroke-width="5"/></g>
+<g class="part" data-p="nuc"><circle cx="150" cy="125" r="40" fill="#ddd6fe" stroke="#6d28d9" stroke-width="3"/></g>
+<g class="part" data-p="nl"><circle cx="150" cy="125" r="13" fill="#7c3aed"/></g>
+<g class="part" data-p="er"><path d="M200 92Q222 84 226 108T214 146Q204 164 192 148" fill="none" stroke="#0ea5e9" stroke-width="6" stroke-linecap="round"/></g>
+<g class="part" data-p="go"><path d="M64 84Q92 72 120 84M66 96Q94 84 122 96M68 108Q96 96 124 108" fill="none" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/></g>
+<g class="part" data-p="mit"><ellipse cx="96" cy="178" rx="22" ry="11" fill="#fdba74" stroke="#c2410c" stroke-width="2"/><path d="M82 178q4-7 8 0t8 0t8 0" fill="none" stroke="#c2410c"/></g>
+<g class="part" data-p="lys"><circle cx="232" cy="182" r="8" fill="#f87171" stroke="#991b1b"/><circle cx="214" cy="198" r="6" fill="#f87171" stroke="#991b1b"/></g>
+<g class="part" data-p="ri"><circle cx="176" cy="66" r="3.5" fill="#374151"/><circle cx="188" cy="74" r="3.5" fill="#374151"/><circle cx="130" cy="196" r="3.5" fill="#374151"/><circle cx="144" cy="204" r="3.5" fill="#374151"/></g>
+<g class="part" data-p="cen"><path d="M76 140h16M84 132v16" stroke="#111827" stroke-width="5" stroke-linecap="round"/></g>`,
+parts:[
+["pm","Plasma membrane","Fluid mosaic lipid–protein bilayer (Singer and Nicolson); selectively permeable."],
+["nuc","Nucleus","Bounded by a double envelope with pores; contains chromatin and the nucleolus."],
+["nl","Nucleolus","Non-membranous site of rRNA synthesis and ribosome assembly."],
+["mit","Mitochondrion","Double-membraned powerhouse of the cell; site of aerobic respiration."],
+["er","Endoplasmic reticulum","Network of tubules and cisternae; the rough type carries ribosomes, the smooth type makes lipids."],
+["go","Golgi apparatus","Stacks of flattened cisternae that modify, package and dispatch products; cis (forming) and trans (maturing) faces."],
+["lys","Lysosomes","Single-membrane vesicles with hydrolytic enzymes active at acidic pH; called suicide bags."],
+["ri","Ribosomes","Non-membranous particles of rRNA and protein; 80S in the eukaryotic cytoplasm; site of protein synthesis."],
+["cen","Centrosome","Holds two centrioles at right angles, each with nine triplets of microtubules; organises the spindle in animal cells."]]},
+
+{id:"plant", t:"Plant cell", ch:"Class 11: Cell: The Unit of Life", vb:"0 0 300 250",
+svg:`
+<g class="part" data-p="cy"><rect x="28" y="28" width="244" height="194" rx="8" fill="#fef9c3"/></g>
+<g class="part" data-p="vac"><ellipse cx="165" cy="125" rx="78" ry="60" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/></g>
+<g class="part" data-p="nuc"><circle cx="58" cy="125" r="17" fill="#ddd6fe" stroke="#6d28d9" stroke-width="3"/><circle cx="58" cy="125" r="6" fill="#7c3aed"/></g>
+<g class="part" data-p="chl"><ellipse cx="70" cy="58" rx="17" ry="9" fill="#4ade80" stroke="#15803d" stroke-width="2"/><ellipse cx="235" cy="52" rx="17" ry="9" fill="#4ade80" stroke="#15803d" stroke-width="2"/><ellipse cx="245" cy="196" rx="17" ry="9" fill="#4ade80" stroke="#15803d" stroke-width="2"/><ellipse cx="80" cy="196" rx="17" ry="9" fill="#4ade80" stroke="#15803d" stroke-width="2"/><path d="M62 58h16M227 52h16M237 196h16M72 196h16" stroke="#166534" stroke-width="3"/></g>
+<g class="part" data-p="mit"><ellipse cx="160" cy="46" rx="14" ry="7" fill="#fdba74" stroke="#c2410c" stroke-width="2"/></g>
+<g class="part" data-p="cw"><rect x="24" y="24" width="252" height="202" rx="10" fill="none" stroke="#15803d" stroke-width="9"/></g>
+<g class="part" data-p="pd"><rect x="267" y="84" width="16" height="10" fill="#fef9c3" stroke="#14532d"/><rect x="267" y="150" width="16" height="10" fill="#fef9c3" stroke="#14532d"/></g>`,
+parts:[
+["cw","Cell wall","Rigid outer layer of cellulose with hemicellulose and pectin; gives shape and protection; absent in animal cells."],
+["cy","Cytoplasm","Semi-fluid matrix between the membrane and nucleus; site of glycolysis and many reactions."],
+["vac","Central vacuole","Large sac bounded by the tonoplast; stores sap and maintains turgor."],
+["nuc","Nucleus","Controls cell activity; holds chromatin and the nucleolus."],
+["chl","Chloroplast","Double-membraned plastid with stacked grana and stroma; site of photosynthesis; has its own circular DNA."],
+["mit","Mitochondrion","Site of aerobic respiration and ATP production."],
+["pd","Plasmodesmata","Cytoplasmic channels running through walls that connect neighbouring plant cells."]]},
+
+{id:"stem", t:"Dicot stem (T.S.)", ch:"Class 11: Anatomy of Flowering Plants", vb:"0 0 300 300",
+svg:`
+<g class="part" data-p="ep"><circle cx="150" cy="150" r="140" fill="#92400e"/></g>
+<g class="part" data-p="hy"><circle cx="150" cy="150" r="122" fill="none" stroke="#16a34a" stroke-width="12"/></g>
+<g class="part" data-p="co"><circle cx="150" cy="150" r="116" fill="#ecfccb"/></g>
+<g class="part" data-p="pi"><circle cx="150" cy="150" r="50" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/></g>
+${[0,60,120,180,240,300].map(a=>`<g transform="rotate(${a} 150 150)"><g class="part" data-p="ph"><ellipse cx="150" cy="68" rx="14" ry="8" fill="#4ade80" stroke="#15803d"/></g><g class="part" data-p="ca"><rect x="138" y="77" width="24" height="6" fill="#fbbf24"/></g><g class="part" data-p="xy"><path d="M138 86H162V104Q150 114 138 104Z" fill="#ef4444" stroke="#7f1d1d"/></g></g>`).join("")}`,
+parts:[
+["ep","Epidermis","Outermost single layer with a thin cuticle; may bear multicellular hairs."],
+["hy","Hypodermis","A few layers of collenchyma just under the outer layer; gives mechanical strength to the young stem."],
+["co","Cortex","Parenchymatous zone between the hypodermis and the vascular ring; its innermost layer is the endodermis (starch sheath)."],
+["ph","Phloem","Lies outside the cambium in each bundle; sieve tubes, companion cells, parenchyma and fibres."],
+["ca","Cambium","Strip of meristem between xylem and phloem; makes the bundle open and allows secondary growth."],
+["xy","Xylem","Lies toward the centre of each bundle; the first-formed elements face the pith (endarch)."],
+["pi","Pith","Ground tissue of parenchyma at the centre of the stem."]]},
+
+{id:"fork", t:"DNA replication fork", ch:"Class 12: Molecular Basis of Inheritance", vb:"0 0 320 260",
+svg:`
+<path d="M108 128L292 44M108 132L292 216" stroke="#6b7280" stroke-width="4" stroke-linecap="round"/>
+<g class="part" data-p="pd"><path d="M14 118L108 128M14 142L108 132" stroke="#6b7280" stroke-width="4" stroke-linecap="round"/><path d="M30 121V140M46 123V139M62 124V138M78 126V136M94 127V134" stroke="#9ca3af" stroke-width="2"/></g>
+<g class="part" data-p="ls"><path d="M132 132L280 64" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/></g>
+<g class="part" data-p="ok"><path d="M132 128L169 145M188 154L224 170M243 179L280 196" stroke="#f97316" stroke-width="4" stroke-linecap="round"/></g>
+<g class="part" data-p="prm"><path d="M132 128L140 132M188 154L195 157M243 179L250 182" stroke="#dc2626" stroke-width="6" stroke-linecap="round"/></g>
+<g class="part" data-p="hel"><circle cx="108" cy="130" r="13" fill="#fbbf24" stroke="#b45309" stroke-width="2"/></g>
+<g class="part" data-p="pol"><ellipse cx="284" cy="62" rx="12" ry="9" fill="#a78bfa" stroke="#5b21b6" stroke-width="2"/><ellipse cx="272" cy="196" rx="12" ry="9" fill="#a78bfa" stroke="#5b21b6" stroke-width="2"/></g>`,
+parts:[
+["pd","Parental DNA duplex","Original double helix ahead of the fork; the two strands are antiparallel and each acts as a template."],
+["hel","Helicase","Unwinds the helix at the fork using ATP, breaking the hydrogen bonds between bases."],
+["ls","Leading strand","Made continuously in the 5′→3′ direction toward the fork; needs only one primer."],
+["ok","Okazaki fragments","Short DNA pieces of the discontinuous strand, later joined by DNA ligase."],
+["prm","RNA primer","Short RNA piece laid down by primase that gives the polymerase a free 3′-OH to extend."],
+["pol","DNA polymerase","Adds nucleotides only in the 5′→3′ direction using the template; also proofreads."]]},
+
+{id:"pyramid", t:"Ecological pyramid of energy", ch:"Class 12: Ecosystem", vb:"0 0 300 245",
+svg:`
+<g class="part" data-p="tc"><path d="M150 20L120 69L180 69Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/></g>
+<g class="part" data-p="sc"><path d="M120 69L90 118L210 118L180 69Z" fill="#f97316" stroke="#7c2d12" stroke-width="2"/></g>
+<g class="part" data-p="pc"><path d="M90 118L59 167L241 167L210 118Z" fill="#facc15" stroke="#854d0e" stroke-width="2"/></g>
+<g class="part" data-p="pr"><path d="M59 167L29 216L271 216L241 167Z" fill="#4ade80" stroke="#166534" stroke-width="2"/></g>
+<text x="150" y="236" text-anchor="middle" font-size="11" fill="#7c2d12">Pyramid of energy is always upright</text>`,
+parts:[
+["pr","Producers","First trophic level; autotrophs that fix solar energy and hold the most energy at the base."],
+["pc","Primary consumers","Herbivores of the second trophic level; receive about 10% of the energy of the level below (10% law)."],
+["sc","Secondary consumers","Carnivores of the third trophic level that feed on herbivores."],
+["tc","Tertiary consumers","Top carnivores of the fourth level; hold the least energy, which limits the length of food chains."]]},
+
+{id:"sperm", t:"Human sperm", ch:"Class 12: Human Reproduction", vb:"0 0 340 160",
+svg:`
+<g class="part" data-p="nu"><ellipse cx="62" cy="80" rx="30" ry="19" fill="#c4b5fd" stroke="#6d28d9" stroke-width="2"/></g>
+<g class="part" data-p="ac"><path d="M34 80C34 64 44 58 58 60C50 68 50 92 58 100C44 102 34 96 34 80Z" fill="#fde68a" stroke="#b45309" stroke-width="2"/></g>
+<g class="part" data-p="ne"><rect x="90" y="73" width="10" height="14" fill="#f9a8d4" stroke="#be185d"/></g>
+<g class="part" data-p="mp"><rect x="100" y="70" width="72" height="20" rx="8" fill="#fdba74" stroke="#c2410c" stroke-width="2"/><path d="M114 70v20M128 70v20M142 70v20M156 70v20" stroke="#c2410c"/></g>
+<g class="part" data-p="ta"><path d="M172 80Q196 64 220 80T268 80T316 80" fill="none" stroke="#475569" stroke-width="5" stroke-linecap="round"/></g>`,
+parts:[
+["ac","Acrosome","Cap-like vesicle over the nucleus filled with hydrolytic enzymes that help the sperm penetrate the egg coverings."],
+["nu","Nucleus","Haploid and tightly condensed within the head."],
+["ne","Neck","Short region joining the head to the middle piece; contains the centrioles."],
+["mp","Middle piece","Packed with mitochondria that supply ATP for movement."],
+["ta","Tail","Contains an axoneme (9+2 microtubules); its beating moves the sperm."]]},
+
+{id:"ab", t:"Antibody structure", ch:"Class 12: Human Health and Disease", vb:"0 0 300 280",
+svg:`
+<g class="part" data-p="cr"><rect x="122" y="180" width="56" height="84" rx="10" fill="rgba(34,197,94,.3)" stroke="#16a34a" stroke-dasharray="4 3"/></g>
+<g class="part" data-p="hc"><path d="M135 262V150L70 40M165 262V150L230 40" fill="none" stroke="#3b82f6" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="part" data-p="lc"><path d="M92 120L56 62M208 120L244 62" fill="none" stroke="#f97316" stroke-width="12" stroke-linecap="round"/></g>
+<g class="part" data-p="vr"><circle cx="63" cy="50" r="22" fill="rgba(250,204,21,.4)" stroke="#a16207" stroke-dasharray="4 3"/><circle cx="237" cy="50" r="22" fill="rgba(250,204,21,.4)" stroke="#a16207" stroke-dasharray="4 3"/></g>
+<g class="part" data-p="hg"><circle cx="150" cy="152" r="15" fill="rgba(168,85,247,.35)" stroke="#7e22ce" stroke-dasharray="4 3"/></g>
+<g class="part" data-p="ds"><path d="M137 162H163M137 172H163M100 112L111 118M200 112L189 118" stroke="#dc2626" stroke-width="3" stroke-linecap="round"/></g>`,
+parts:[
+["hc","Heavy chains","Two longer polypeptide chains forming the main frame; an antibody has 2 long and 2 short chains (H₂L₂)."],
+["lc","Light chains","Two shorter polypeptide chains, each bonded to a longer chain by disulphide bonds."],
+["vr","Antigen-binding region","Tips of the arms whose shape fits one specific antigen; gives the antibody its specificity."],
+["cr","Constant region (Fc)","Stem that is similar within a class (IgG, IgA, IgM, IgE, IgD) and links to immune cells."],
+["hg","Hinge region","Flexible part where the arms meet the stem."],
+["ds","Disulphide bonds","Covalent S–S links that hold the four chains together."]]}
+,{id:"membrane", t:"Plasma membrane (fluid mosaic)", ch:"Class 11: Cell: The Unit of Life", vb:"0 0 320 220",
+svg:`
+<text x="6" y="24" font-size="10" fill="#7c2d12">Outside</text><text x="6" y="206" font-size="10" fill="#7c2d12">Cytoplasm</text>
+<g class="part" data-p="tl">${hLips.map(l => l.t).join("")}</g>
+<g class="part" data-p="hd">${hLips.map(l => l.h).join("")}</g>
+<g class="part" data-p="ch"><ellipse cx="70" cy="100" rx="4" ry="11" fill="#f97316"/><ellipse cx="210" cy="100" rx="4" ry="11" fill="#f97316"/><ellipse cx="120" cy="99" rx="4" ry="11" fill="#f97316"/></g>
+<g class="part" data-p="ip"><rect x="140" y="46" width="36" height="108" rx="16" fill="#60a5fa" stroke="#1d4ed8" stroke-width="2"/></g>
+<g class="part" data-p="pp"><ellipse cx="80" cy="40" rx="26" ry="12" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/></g>
+<g class="part" data-p="gp"><rect x="248" y="48" width="22" height="104" rx="10" fill="#34d399" stroke="#047857" stroke-width="2"/><path d="M259 48V28M259 38L247 26M259 38L271 26" fill="none" stroke="#be123c" stroke-width="2.5"/><circle cx="259" cy="26" r="4" fill="#f43f5e"/><circle cx="246" cy="25" r="4" fill="#f43f5e"/><circle cx="272" cy="25" r="4" fill="#f43f5e"/></g>`,
+parts:[
+["hd","Phospholipid heads","Polar and hydrophilic; face the watery surroundings on both sides."],
+["tl","Phospholipid tails","Non-polar, hydrophobic fatty-acid chains that face each other inside the bilayer."],
+["ip","Integral protein","Embedded across the bilayer; forms channels and carriers for transport."],
+["pp","Peripheral protein","Lies on the surface of the membrane and is easily removed without breaking the lipid layer."],
+["ch","Cholesterol","Packs between the fatty-acid tails and regulates membrane fluidity."],
+["gp","Glycoprotein","Protein carrying sugar chains on the outer face; helps in cell recognition."]]}
+
+,{id:"leaf", t:"Dicot leaf (T.S.)", ch:"Class 11: Anatomy of Flowering Plants", vb:"0 0 320 240",
+svg:`
+<g class="part" data-p="cu"><rect x="14" y="16" width="292" height="6" fill="#92400e"/></g>
+<g class="part" data-p="ue">${[...Array(9)].map((_, i) => `<rect x="${16 + i * 32}" y="24" width="30" height="20" fill="#bbf7d0" stroke="#15803d"/>`).join("")}</g>
+<g class="part" data-p="pal">${[...Array(11)].map((_, i) => `<rect x="${16 + i * 26.5}" y="46" width="24" height="56" rx="6" fill="#4ade80" stroke="#15803d"/>`).join("")}</g>
+<g class="part" data-p="spo">${[0, 1, 2].flatMap(r => [...Array(9)].map((_, c) => `<circle cx="${34 + c * 32 + (r % 2) * 16}" cy="${116 + r * 22}" r="12" fill="#bbf7d0" stroke="#15803d"/>`)).join("")}</g>
+<g class="part" data-p="vb"><circle cx="170" cy="140" r="26" fill="#fef3c7" stroke="#92400e" stroke-width="3"/><circle cx="162" cy="132" r="5" fill="#dc2626"/><circle cx="178" cy="132" r="5" fill="#dc2626"/><ellipse cx="170" cy="150" rx="12" ry="7" fill="#a78bfa"/></g>
+<g class="part" data-p="le">${[...Array(9)].map((_, i) => `<rect x="${16 + i * 32}" y="184" width="30" height="20" fill="#bbf7d0" stroke="#15803d"/>`).join("")}</g>
+<g class="part" data-p="sc"><ellipse cx="80" cy="176" rx="12" ry="7" fill="#e0f2fe" stroke="#0284c7"/></g>
+<g class="part" data-p="gc"><ellipse cx="73" cy="194" rx="6.5" ry="10" fill="#16a34a" stroke="#14532d" stroke-width="2"/><ellipse cx="87" cy="194" rx="6.5" ry="10" fill="#16a34a" stroke="#14532d" stroke-width="2"/></g>`,
+parts:[
+["cu","Cuticle","Waxy layer over the epidermis that reduces water loss."],
+["ue","Upper epidermis","Single protective layer of cells facing the light; usually fewer stomata."],
+["pal","Palisade parenchyma","Elongated, compactly arranged cells packed with chloroplasts; main site of photosynthesis."],
+["spo","Spongy parenchyma","Loosely arranged, rounded cells with large air spaces that allow gas exchange."],
+["vb","Vascular bundle (vein)","Xylem lies towards the upper side and phloem towards the lower side, enclosed in a bundle sheath."],
+["le","Lower epidermis","Protective layer that carries more stomata than the upper one in a dicot leaf."],
+["gc","Guard cells","Bean-shaped cells with chloroplasts that open and close the stoma."],
+["sc","Substomatal cavity","Air space just inside the stoma that connects to the spaces among the spongy cells."]]}
+
+,{id:"stomata", t:"Stomata", ch:"Class 11: Transport in Plants", vb:"0 0 300 220",
+svg:`
+<g class="part" data-p="ec"><rect x="4" y="8" width="80" height="204" rx="28" fill="#d9f99d" stroke="#4d7c0f" stroke-width="3"/><rect x="216" y="8" width="80" height="204" rx="28" fill="#d9f99d" stroke="#4d7c0f" stroke-width="3"/></g>
+<g class="part" data-p="po"><ellipse cx="150" cy="110" rx="18" ry="72" fill="#e0f2fe" stroke="#0284c7" stroke-dasharray="4 3"/></g>
+<g class="part" data-p="gc">${hM2('<path d="M150 30C80 50 80 170 150 190C128 150 128 70 150 30Z" fill="#4ade80" stroke="#166534" stroke-width="3"/>')}</g>
+<g class="part" data-p="iw">${hM2('<path d="M150 30C128 70 128 150 150 190" fill="none" stroke="#14532d" stroke-width="7"/>')}</g>
+<g class="part" data-p="chl">${hM2('<ellipse cx="108" cy="80" rx="8" ry="4" fill="#15803d"/><ellipse cx="104" cy="110" rx="8" ry="4" fill="#15803d"/><ellipse cx="108" cy="140" rx="8" ry="4" fill="#15803d"/>')}</g>`,
+parts:[
+["ec","Epidermal (subsidiary) cells","Cells beside the guard cells that support their movement; they lack chloroplasts."],
+["gc","Guard cells","Bean-shaped (dumb-bell shaped in grasses); when turgid they bulge outwards and open the pore."],
+["iw","Thick inner wall","Inelastic wall facing the pore; the thin outer wall stretches more, so turgor opens the pore."],
+["po","Stomatal pore","Opening for gas exchange and transpiration; opens in light when K⁺ enters the guard cells and water follows."],
+["chl","Chloroplasts","Present in these cells (unlike ordinary epidermal cells) and help build the solutes for movement."]]}
+
+,{id:"chromosome", t:"Chromosome structure", ch:"Class 11: Cell Cycle and Cell Division", vb:"0 0 200 300",
+svg:`
+<g class="part" data-p="la">${hM2('<rect x="72" y="136" width="28" height="144" rx="12" fill="#93c5fd" stroke="#1d4ed8" stroke-width="2"/>', 200)}</g>
+<g class="part" data-p="sa">${hM2('<rect x="72" y="62" width="28" height="68" rx="10" fill="#93c5fd" stroke="#1d4ed8" stroke-width="2"/>', 200)}</g>
+<g class="part" data-p="sc">${hM2('<path d="M86 48V62" stroke="#1d4ed8" stroke-width="4"/>', 200)}</g>
+<g class="part" data-p="sat">${hM2('<circle cx="86" cy="36" r="13" fill="#fda4af" stroke="#be123c" stroke-width="2"/>', 200)}</g>
+<g class="part" data-p="cen"><ellipse cx="100" cy="133" rx="30" ry="8" fill="#7c3aed"/></g>
+<g class="part" data-p="kin"><rect x="50" y="122" width="10" height="22" rx="3" fill="#be185d"/><rect x="140" y="122" width="10" height="22" rx="3" fill="#be185d"/></g>`,
+parts:[
+["sa","Short arm (p)","The shorter arm on one side of the centromere."],
+["la","Long arm (q)","The longer arm on the other side of the centromere."],
+["cen","Centromere (primary constriction)","Holds the sister chromatids together; its position classifies chromosomes as metacentric, sub-metacentric, acrocentric or telocentric."],
+["kin","Kinetochore","Disc-shaped protein structures on either side of the centromere to which spindle fibres attach."],
+["sc","Secondary constriction","Non-staining constriction at a constant position in some chromosomes; can carry the nucleolar organiser."],
+["sat","Satellite","Small segment lying beyond the secondary constriction on some chromosomes."]]}
+
+,{id:"plasmid", t:"Plasmid vector (pBR322)", ch:"Class 12: Biotechnology: Principles and Processes", vb:"0 0 300 300",
+svg:`
+<circle cx="150" cy="150" r="90" fill="none" stroke="#cbd5e1" stroke-width="5"/>
+<g class="part" data-p="tet">${hArc(310, 50, 90, '#f59e0b', 14)}</g>
+<g class="part" data-p="amp">${hArc(85, 185, 90, '#ef4444', 14)}</g>
+<g class="part" data-p="rop">${hArc(255, 285, 90, '#8b5cf6', 14)}</g>
+<g class="part" data-p="ori"><circle cx="${hF(hPol(225, 90)[0])}" cy="${hF(hPol(225, 90)[1])}" r="13" fill="#6ee7b7" stroke="#047857" stroke-width="3"/></g>
+<g class="part" data-p="eco">${hTick(295)}</g>
+<g class="part" data-p="hin">${hTick(325)}</g>
+<g class="part" data-p="sal">${hTick(355)}</g>
+<g class="part" data-p="bam">${hTick(25)}</g>
+<g class="part" data-p="pst">${hTick(120)}</g>
+<g class="part" data-p="pvu">${hTick(155)}</g>`,
+parts:[
+["ori","Origin of replication (ori)","Sequence from where replication starts; decides the copy number of the plasmid."],
+["amp","ampR (ampicillin resistance)","Selectable marker: cells carrying the plasmid survive on ampicillin."],
+["tet","tetR (tetracycline resistance)","Selectable marker; foreign DNA inserted at BamHI or SalI here inactivates it (insertional inactivation)."],
+["rop","rop gene","Codes for proteins involved in the replication of the plasmid."],
+["eco","EcoRI site","Restriction site (G↓AATTC) that leaves sticky ends; a widely used cloning site."],
+["hin","HindIII site","Cloning site inside the tetracycline resistance gene."],
+["sal","SalI site","Cloning site inside the tetracycline resistance gene, used for insertional inactivation."],
+["bam","BamHI site","Cloning site inside the tetracycline resistance gene; recombinants lose that resistance."],
+["pst","PstI site","Cloning site inside the ampicillin resistance gene; insertion here inactivates it."],
+["pvu","PvuI site","Cloning site that lies within the ampicillin resistance gene."]]}
+
+,{id:"hiv", t:"HIV structure", ch:"Class 12: Human Health and Disease", vb:"0 0 300 300",
+svg:`
+<g class="part" data-p="gp">${hRot(14, '<path d="M150 40V26" stroke="#7c3aed" stroke-width="4"/><circle cx="150" cy="21" r="7" fill="#a78bfa" stroke="#5b21b6" stroke-width="2"/>')}</g>
+<g class="part" data-p="env"><circle cx="150" cy="150" r="110" fill="#fde68a" stroke="#b45309" stroke-width="8"/></g>
+<g class="part" data-p="cap"><path d="M150 76L208 196Q150 232 92 196Z" fill="#bbf7d0" stroke="#15803d" stroke-width="5" stroke-linejoin="round"/></g>
+<g class="part" data-p="rna"><path d="M122 124C140 100 160 142 180 122S162 176 140 168M130 112C150 100 168 138 186 134" fill="none" stroke="#dc2626" stroke-width="3"/></g>
+<g class="part" data-p="rt"><ellipse cx="128" cy="160" rx="8" ry="6" fill="#f59e0b" stroke="#92400e"/><ellipse cx="168" cy="164" rx="8" ry="6" fill="#f59e0b" stroke="#92400e"/><ellipse cx="148" cy="188" rx="8" ry="6" fill="#f59e0b" stroke="#92400e"/></g>`,
+parts:[
+["env","Lipid envelope","Outer coat taken from the host-cell membrane when the virus buds out."],
+["gp","Envelope glycoproteins (gp120, gp41)","Spikes that let the virus attach to CD4 receptors on helper T-cells and macrophages."],
+["cap","Capsid","Protein shell (p24) enclosing the RNA and enzymes."],
+["rna","RNA genome","Two identical single-stranded molecules; HIV is a retrovirus."],
+["rt","Reverse transcriptase","Enzyme that makes viral DNA from the RNA template; the DNA then integrates into the host genome."]]}
+
+,{id:"eye", t:"Human eye", ch:"Class 11: Neural Control and Coordination", vb:"0 0 320 260",
+svg:`
+<g class="part" data-p="on"><path d="M248 163L295 192" stroke="#eab308" stroke-width="12" stroke-linecap="round"/></g>
+<g class="part" data-p="vit"><circle cx="170" cy="130" r="78" fill="#cffafe"/></g>
+<g class="part" data-p="aq"><path d="M94 90Q66 130 94 170L104 170V90Z" fill="#a5f3fc" stroke="#0891b2"/></g>
+<g class="part" data-p="sc"><path d="M92 85A90 90 0 1 1 92 175" fill="none" stroke="#9ca3af" stroke-width="9"/></g>
+<g class="part" data-p="ch"><path d="M98 87A84 84 0 1 1 98 173" fill="none" stroke="#78350f" stroke-width="5"/></g>
+<g class="part" data-p="ret"><path d="M170 51A79 79 0 0 1 170 209" fill="none" stroke="#f472b6" stroke-width="6"/></g>
+<g class="part" data-p="co"><path d="M92 85Q62 130 92 175" fill="none" stroke="#38bdf8" stroke-width="7"/></g>
+<g class="part" data-p="ln"><ellipse cx="120" cy="130" rx="9" ry="26" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/></g>
+<g class="part" data-p="cb"><path d="M128 94L120 108M128 166L120 152" stroke="#ea580c" stroke-width="2"/><rect x="124" y="84" width="16" height="14" rx="4" fill="#fb923c"/><rect x="124" y="162" width="16" height="14" rx="4" fill="#fb923c"/></g>
+<g class="part" data-p="ir"><rect x="102" y="92" width="9" height="24" fill="#7c3aed"/><rect x="102" y="144" width="9" height="24" fill="#7c3aed"/></g>
+<g class="part" data-p="pu"><rect x="100" y="116" width="13" height="28" fill="rgba(0,0,0,0)" stroke="#111" stroke-dasharray="3 2"/></g>
+<g class="part" data-p="fov"><circle cx="249" cy="130" r="5" fill="#dc2626"/></g>
+<g class="part" data-p="bs"><circle cx="241" cy="163" r="6" fill="#fde047" stroke="#a16207" stroke-width="2"/></g>`,
+parts:[
+["sc","Sclera","Tough, white outer coat; continues in front as the transparent cornea."],
+["co","Cornea","Transparent front part of the outer coat; bends most of the incoming light."],
+["ch","Choroid","Middle, pigmented coat rich in blood vessels; thickens in front to form the ciliary body."],
+["ret","Retina","Inner layer containing photoreceptors (rods and cones), bipolar cells and ganglion cells."],
+["fov","Fovea (yellow spot)","Central pit of the macula lutea with only cones; point of sharpest vision."],
+["bs","Blind spot","Region where nerve fibres leave the retina; no rods or cones, so no image is formed."],
+["on","Optic nerve","Carries impulses from the retina to the brain."],
+["ln","Lens","Transparent biconvex structure held by ligaments; changes shape to focus (accommodation)."],
+["ir","Iris","Pigmented, contractile diaphragm that gives the eye its colour and controls the size of the pupil."],
+["pu","Pupil","Central opening of the iris through which light enters."],
+["cb","Ciliary body","Muscles and ligaments that hold the lens and alter its curvature."],
+["aq","Aqueous humour","Thin watery fluid in the space between the cornea and the lens."],
+["vit","Vitreous humour","Transparent jelly-like fluid behind the lens that maintains the shape of the eyeball."]]}
+];
+
+const $ = id => document.getElementById(id);
+let mix = false, di = 0, mode = "learn", cur = null, answered = false;
+const sc = {c: 0, n: 0, k: 0};
+const shuf = a => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]);
+const P = id => D[di].parts.find(p => p[0] === id);
+
+function tabs(){
+  $("dtabs").innerHTML = "";
+  D.forEach((d, i) => {
+    const b = document.createElement("button"); b.textContent = d.t;
+    b.className = i === di ? "on" : ""; b.onclick = () => { di = i; show(); }; $("dtabs").appendChild(b);
+  });
+}
+function draw(){
+  tabs();
+  const d = D[di];
+  $("chap").textContent = d.ch;
+  $("svgbox").innerHTML = '<svg viewBox="' + d.vb + '">' + d.svg + "</svg>";
+  $("stage").classList.toggle("quiz", mode === "quiz");
+  document.querySelectorAll(".part").forEach(g => g.onclick = () => { if (mode === "learn") learn(g.dataset.p); });
+}
+function show(){ draw(); mode === "learn" ? learnHome() : nextQ(); }
+function hl(id){
+  document.querySelectorAll(".part").forEach(g => g.classList.toggle("hl", g.dataset.p === id));
+}
+function learnHome(){
+  hl(null);
+  $("side").innerHTML = '<p class="mut">Tap any part of the diagram, or a name below, to see what it is and the facts NEET asks about it.</p><div class="chips" id="chips"></div>';
+  D[di].parts.forEach(p => {
+    const b = document.createElement("button"); b.textContent = p[1]; b.onclick = () => learn(p[0]); $("chips").appendChild(b);
+  });
+}
+function learn(id){
+  const p = P(id); hl(id);
+  $("side").innerHTML = '<h3>' + p[1] + '</h3><p>' + p[2] + '</p><button id="bk">All parts</button>';
+  $("bk").onclick = learnHome;
+}
+function nextQ(){
+  answered = false;
+  if (mix && mode === "quiz") { const nd = Math.floor(Math.random() * D.length); if (nd !== di) { di = nd; draw(); } }
+  hl(null);
+  const parts = D[di].parts;
+  cur = parts[Math.floor(Math.random() * parts.length)];
+  const byFact = Math.random() < 0.4;
+  const opts = shuf([cur].concat(shuf(parts.filter(p => p !== cur)).slice(0, 3)));
+  let h = '<p class="q">' + (byFact ? "Which part is described here?<br><span style='font-weight:400'>" + cur[2] + "</span>" : "Name the part glowing in orange.") + "</p>";
+  if (!byFact) hl(cur[0]);
+  $("side").innerHTML = h + '<div id="opts"></div><div id="res"></div>';
+  opts.forEach(o => {
+    const b = document.createElement("button"); b.className = "opt"; b.textContent = o[1];
+    b.onclick = () => answer(o, b); $("opts").appendChild(b);
+  });
+}
+function answer(o, b){
+  if (answered) return; answered = true;
+  const ok = o === cur; sc.n++; if (ok) sc.c++;
+  sc.k = ok ? sc.k + 1 : 0;
+  [...$("opts").children].forEach(x => { if (x.textContent === cur[1]) x.classList.add("right"); });
+  if (!ok) b.classList.add("wrong");
+  hl(cur[0]);
+  $("res").innerHTML = '<div class="fb" style="background:' + (ok ? "var(--ok)" : "var(--no)") + '">' +
+    (ok ? "Correct!" : "Not quite. It is the " + cur[1] + ".") + "</div><p>" + cur[2] + '</p><button id="nx" class="on">Next question</button>';
+  $("nx").onclick = nextQ;
+  $("score").textContent = "Score: " + sc.c + "/" + sc.n + " · streak " + sc.k;
+}
+function setMode(m){
+  mode = m;
+  $("mLearn").classList.toggle("on", m === "learn");
+  $("mQuiz").classList.toggle("on", m === "quiz");
+  show();
+}
+$("mLearn").onclick = () => setMode("learn");
+$("mQuiz").onclick = () => setMode("quiz");
+$("mix").onchange = e => { mix = e.target.checked; if (mode === "quiz") nextQ(); };
+show();
+</script>
+</body>
+</html>
